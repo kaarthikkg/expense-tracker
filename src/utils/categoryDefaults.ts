@@ -8,16 +8,20 @@ export function findCategoryByName(
   return categories.find((c) => c.name.trim().toLowerCase() === key);
 }
 
-/** Default category when logging a new transaction */
+/** Categories available when logging a transaction of the given type */
+export function categoriesForTransactionType(
+  categories: Category[],
+  type: TransactionType,
+): Category[] {
+  return categories.filter((c) => !c.kind || c.kind === type);
+}
+
+/** First matching category for new transactions (no hardcoded names) */
 export function getDefaultCategoryId(
   categories: Category[],
   type: TransactionType,
 ): string {
-  if (type === 'income') {
-    const salary = findCategoryByName(categories, 'Salary');
-    if (salary) return salary.id;
-  }
-
-  const food = findCategoryByName(categories, 'Food');
-  return food?.id ?? categories[0]?.id ?? '';
+  const pool = categoriesForTransactionType(categories, type);
+  const sorted = [...pool].sort((a, b) => a.name.localeCompare(b.name));
+  return sorted[0]?.id ?? categories[0]?.id ?? '';
 }

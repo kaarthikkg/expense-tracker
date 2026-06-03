@@ -1,16 +1,16 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { ExpenseForm } from '@/components/expenses/ExpenseForm';
 import { PageShell } from '@/components/layout/PageShell';
-import { WidgetPanel } from '@/components/dashboard/WidgetPanel';
-import { HealthScoreWidget } from '@/components/dashboard/HealthScoreWidget';
+import { DashboardSection } from '@/components/dashboard/DashboardSection';
 import { InsightFeed } from '@/components/dashboard/InsightFeed';
 import { AnimatedMetric } from '@/components/ui/AnimatedMetric';
+import { ProgressBar } from '@/components/ui/ProgressBar';
 import { TrendAreaChart } from '@/components/charts/TrendAreaChart';
-import { CategoryBarsChart } from '@/components/charts/CategoryBarsChart';
+import { CategoryPieChart } from '@/components/charts/CategoryPieChart';
 import { MerchantAvatar } from '@/components/expenses/MerchantAvatar';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics';
@@ -20,6 +20,33 @@ import { useBudgetStore } from '@/store/budgetStore';
 import { useGoalStore } from '@/store/goalStore';
 import { formatDisplayDate } from '@/utils/dates';
 import { isIncome } from '@/utils/transaction';
+
+function SummaryStat({
+  label,
+  children,
+  sub,
+  delay = 0,
+}: {
+  label: string;
+  children: ReactNode;
+  sub?: string;
+  delay?: number;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, delay }}
+      className="glass-panel rounded-2xl p-5"
+    >
+      <p className="text-[11px] font-medium uppercase tracking-widest text-fg-muted">{label}</p>
+      <div className="mt-2 font-mono text-2xl font-semibold tracking-tight sm:text-3xl">
+        {children}
+      </div>
+      {sub && <p className="mt-1.5 text-xs text-fg-secondary">{sub}</p>}
+    </motion.div>
+  );
+}
 
 export function DashboardPage() {
   const expenses = useExpenseStore((s) => s.expenses);
@@ -31,159 +58,160 @@ export function DashboardPage() {
   const [addOpen, setAddOpen] = useState(false);
 
   const m = useDashboardMetrics(expenses, categories, budgets, goals);
-  const recent = expenses.slice(0, 5);
+  const recent = expenses;
 
   return (
     <PageShell
-      title="Financial Terminal"
-      subtitle="Real-time personal finance command center"
+      title="Dashboard"
+      subtitle={`Overview for ${m.monthLabel}`}
       action={
         <Button onClick={() => setAddOpen(true)} size="sm">
           + Log transaction
         </Button>
       }
     >
-      <div className="grid auto-rows-min gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <WidgetPanel label="Financial Health" delay={0}>
-          <HealthScoreWidget score={m.healthScore} />
-        </WidgetPanel>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <SummaryStat label="Spent this month" sub="Expenses only" delay={0}>
+          <span className="metric-glow text-fg">
+            <AnimatedMetric value={m.monthTotal} />
+          </span>
+          {m.budgetRemaining !== null && (
+            <div className="mt-4 border-t border-cockpit-border pt-4">
+              <div className="mb-1 flex justify-between text-[11px] text-fg-muted">
+                <span>Budget</span>
+                <span>
+                  {format(m.monthTotal)} / {format(m.monthTotal + m.budgetRemaining)}
+                </span>
+              </div>
+              <ProgressBar value={m.monthTotal} max={m.monthTotal + m.budgetRemaining} />
+              <p className="mt-1.5 text-[11px] text-fg-muted">
+                {m.budgetRemaining >= 0
+                  ? `${format(m.budgetRemaining)} remaining`
+                  : `${format(-m.budgetRemaining)} over budget`}
+              </p>
+            </div>
+          )}
+        </SummaryStat>
 
-        <WidgetPanel label="Spending Velocity" delay={0.05}>
-          <p className="font-mono text-3xl font-bold tracking-tight metric-glow">
-            {m.velocityDirection === 'up' ? '+' : m.velocityDirection === 'down' ? '−' : ''}
-            {m.spendingVelocity}%
-          </p>
-          <p className="mt-2 text-xs text-fg-secondary">
-            Today vs 7-day average
-          </p>
-          <p
-            className={`mt-4 text-sm font-medium ${
-              m.velocityDirection === 'up'
-                ? 'text-warning'
-                : m.velocityDirection === 'down'
-                  ? 'text-success'
-                  : 'text-fg-muted'
-            }`}
-          >
-            {m.velocityDirection === 'up'
-              ? 'Accelerating spend'
-              : m.velocityDirection === 'down'
-                ? 'Cooling down'
-                : 'Stable velocity'}
-          </p>
-        </WidgetPanel>
-
-        <WidgetPanel label="Monthly Burn Rate" delay={0.1}>
-          <p className="text-xs text-fg-muted">Daily average</p>
-          <p className="mt-1 font-mono text-2xl font-semibold">
-            <AnimatedMetric value={m.burnRate} />
-          </p>
-          <p className="mt-4 text-xs text-fg-muted">Projected month-end</p>
-          <p className="font-mono text-lg text-warning">{format(m.projectedMonth)}</p>
-        </WidgetPanel>
-
-        <WidgetPanel label="Savings Momentum" delay={0.15}>
-          <p className="font-mono text-4xl font-bold text-success metric-glow">{m.savingsMomentum}%</p>
-          <p className="mt-2 text-xs text-fg-secondary">
-            Aggregate goal progress
-          </p>
-        </WidgetPanel>
-
-        <WidgetPanel label="Income this month" delay={0.16}>
-          <p className="font-mono text-3xl font-bold text-success metric-glow">
+        <SummaryStat label="Income" sub="This month" delay={0.05}>
+          <span className="text-success metric-glow">
             <AnimatedMetric value={m.monthIncome} />
-          </p>
-          <p className="mt-2 text-xs text-fg-secondary">
-            Logged inflows
-          </p>
-        </WidgetPanel>
+          </span>
+        </SummaryStat>
 
-        <WidgetPanel label="Net cash flow" delay={0.17}>
-          <p
-            className={`font-mono text-3xl font-bold metric-glow ${
-              m.netCashFlow >= 0 ? 'text-success' : 'text-danger'
-            }`}
+        <SummaryStat label="Net cash flow" sub="Income − expenses" delay={0.1}>
+          <span
+            className={`metric-glow ${m.netCashFlow >= 0 ? 'text-success' : 'text-danger'}`}
           >
             {m.netCashFlow >= 0 ? '+' : ''}
             {format(m.netCashFlow)}
-          </p>
-          <p className="mt-2 text-xs text-fg-secondary">
-            Income minus expenses
-          </p>
-        </WidgetPanel>
+          </span>
+        </SummaryStat>
 
-        <WidgetPanel label="Top Spending Trend" span="wide" delay={0.2}>
-          <div className="mb-3 flex items-baseline justify-between">
-            <div>
-              <p className="text-lg font-semibold">{m.topCategoryName ?? '—'}</p>
-              <p className="text-xs text-fg-muted">Leading category this month</p>
-            </div>
-            {m.topCategoryName && (
-              <p className="font-mono text-xl font-semibold text-accent">
-                {format(m.topCategoryTotal)}
-              </p>
-            )}
-          </div>
-          <TrendAreaChart data={m.trend} height={200} />
-        </WidgetPanel>
-
-        <WidgetPanel label="Capital Flow by Category" delay={0.25}>
-          <CategoryBarsChart data={m.categoryBreakdown} />
-        </WidgetPanel>
-
-        <WidgetPanel label="Smart Insight Feed" span="wide" delay={0.3}>
-          <InsightFeed insights={m.insights} />
-        </WidgetPanel>
+        <SummaryStat
+          label="Savings goals"
+          sub={goals.length > 0 ? 'Average progress' : 'No goals set'}
+          delay={0.15}
+        >
+          <span className={goals.length > 0 ? 'text-success metric-glow' : 'text-fg-muted'}>
+            {goals.length > 0 ? `${m.savingsMomentum}%` : '—'}
+          </span>
+        </SummaryStat>
       </div>
 
-      <motion.section
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.35 }}
-        className="glass-panel mt-6 rounded-2xl"
-      >
-        <div className="flex items-center justify-between border-b border-cockpit-border px-5 py-4">
-          <p className="text-sm font-semibold">Live transaction stream</p>
-          <Link to="/expenses" className="text-xs font-medium text-accent hover:underline">
-            Open full flow →
-          </Link>
-        </div>
-        <div className="divide-y divide-cockpit-border p-2">
-          {recent.length === 0 ? (
-            <div className="py-12 text-center">
-              <p className="text-sm text-fg-muted">No transactions yet</p>
-              <Button className="mt-4" size="sm" onClick={() => setAddOpen(true)}>
-                Log first transaction
-              </Button>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <DashboardSection
+          title="Spending by category"
+          subtitle="Share of this month's expenses"
+          delay={0.2}
+        >
+          <CategoryPieChart
+            data={m.categoryBreakdown}
+            monthKey={m.monthKey}
+            height={240}
+          />
+        </DashboardSection>
+
+        <DashboardSection
+          title="Daily spending"
+          subtitle={
+            m.topCategoryName
+              ? `Top category: ${m.topCategoryName} (${format(m.topCategoryTotal)})`
+              : 'Expense trend through the month'
+          }
+          delay={0.25}
+        >
+          <TrendAreaChart data={m.trend} height={240} />
+        </DashboardSection>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-5">
+        <DashboardSection
+          title="Insights"
+          subtitle="Based on your recent activity"
+          className="lg:col-span-2"
+          delay={0.3}
+        >
+          <InsightFeed insights={m.insights} />
+        </DashboardSection>
+
+        <motion.section
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          className="glass-panel flex flex-col rounded-2xl lg:col-span-3"
+        >
+          <div className="flex items-center justify-between border-b border-cockpit-border px-5 py-4">
+            <div>
+              <h2 className="text-sm font-semibold text-fg">Recent transactions</h2>
+              <p className="mt-0.5 text-xs text-fg-muted">
+                {recent.length} transaction{recent.length === 1 ? '' : 's'}, newest first
+              </p>
             </div>
-          ) : (
-            recent.map((e) => {
-              const cat = categories.find((c) => c.id === e.categoryId);
-              const income = isIncome(e);
-              return (
-                <div
-                  key={e.id}
-                  className="flex items-center gap-4 rounded-xl px-3 py-3 transition hover-surface"
-                >
-                  <MerchantAvatar category={cat} description={e.description} size="sm" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{e.description || 'Transaction'}</p>
-                    <p className="text-xs text-fg-muted">
-                      {income ? 'Income' : 'Expense'} · {cat?.name} · {formatDisplayDate(e.date)}
-                    </p>
-                  </div>
-                  <span
-                    className={`font-mono text-sm font-semibold ${income ? 'text-success' : ''}`}
+            <Link to="/expenses" className="text-xs font-medium text-accent hover:underline">
+              View all →
+            </Link>
+          </div>
+          <div className="max-h-[min(28rem,60vh)] divide-y divide-cockpit-border overflow-y-auto p-2">
+            {recent.length === 0 ? (
+              <div className="py-10 text-center">
+                <p className="text-sm text-fg-muted">No transactions yet</p>
+                <Button className="mt-4" size="sm" onClick={() => setAddOpen(true)}>
+                  Log first transaction
+                </Button>
+              </div>
+            ) : (
+              recent.map((e) => {
+                const cat = categories.find((c) => c.id === e.categoryId);
+                const income = isIncome(e);
+                return (
+                  <div
+                    key={e.id}
+                    className="flex items-center gap-4 rounded-xl px-3 py-3 transition hover-surface"
                   >
-                    {income ? '+' : ''}
-                    {format(e.amount)}
-                  </span>
-                </div>
-              );
-            })
-          )}
-        </div>
-      </motion.section>
+                    <MerchantAvatar category={cat} description={e.description} size="sm" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">
+                        {e.description || 'Transaction'}
+                      </p>
+                      <p className="text-xs text-fg-muted">
+                        {income ? 'Income' : 'Expense'} · {cat?.name} ·{' '}
+                        {formatDisplayDate(e.date)}
+                      </p>
+                    </div>
+                    <span
+                      className={`font-mono text-sm font-semibold ${income ? 'text-success' : ''}`}
+                    >
+                      {income ? '+' : ''}
+                      {format(e.amount)}
+                    </span>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </motion.section>
+      </div>
 
       <Modal open={addOpen} title="Log transaction" onClose={() => setAddOpen(false)}>
         <ExpenseForm

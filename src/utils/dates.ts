@@ -11,12 +11,22 @@ export function parseMonthKey(month: string): { year: number; month: number } {
   return { year: y, month: m };
 }
 
+export function formatMonthLabel(monthKey: string): string {
+  const { year, month } = parseMonthKey(monthKey);
+  return new Date(year, month - 1, 1).toLocaleDateString(undefined, {
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
 export function isSameDay(a: string, b: string): boolean {
   return a.slice(0, 10) === b.slice(0, 10);
 }
 
 export function isInMonth(dateStr: string, monthKey: string): boolean {
-  return dateStr.startsWith(monthKey);
+  const day = dateStr.slice(0, 10);
+  const { start, end } = getMonthRange(monthKey);
+  return day >= start && day <= end;
 }
 
 export function formatDisplayDate(dateStr: string): string {

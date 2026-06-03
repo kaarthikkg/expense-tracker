@@ -11,11 +11,14 @@ export interface Expense {
   type?: TransactionType;
 }
 
+export type CategoryKind = 'expense' | 'income';
+
 export interface Category {
   id: string;
   name: string;
   color: string;
-  isDefault?: boolean;
+  /** When set, category is suggested only for that type in transaction forms */
+  kind?: CategoryKind;
 }
 
 export interface Budget {

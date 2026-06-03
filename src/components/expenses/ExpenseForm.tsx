@@ -5,7 +5,10 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { toDateString } from '@/utils/dates';
-import { getDefaultCategoryId } from '@/utils/categoryDefaults';
+import {
+  categoriesForTransactionType,
+  getDefaultCategoryId,
+} from '@/utils/categoryDefaults';
 import { getTransactionType } from '@/utils/transaction';
 
 interface ExpenseFormProps {
@@ -39,10 +42,16 @@ export function ExpenseForm({
   const [date, setDate] = useState(initial?.date ?? toDateString());
   const [error, setError] = useState('');
 
+  const categoryOptions = categoriesForTransactionType(categories, type);
+
   const handleTypeChange = (next: TransactionType) => {
     setType(next);
     if (!initial) {
-      setCategoryId(getDefaultCategoryId(categories, next));
+      const pool = categoriesForTransactionType(categories, next);
+      const stillValid = pool.some((c) => c.id === categoryId);
+      setCategoryId(
+        stillValid ? categoryId : getDefaultCategoryId(categories, next),
+      );
     }
   };
 
@@ -97,7 +106,11 @@ export function ExpenseForm({
         label="Category"
         value={categoryId}
         onChange={(e) => setCategoryId(e.target.value)}
-        options={categories.map((c) => ({ value: c.id, label: c.name }))}
+        options={
+          categoryOptions.length > 0
+            ? categoryOptions.map((c) => ({ value: c.id, label: c.name }))
+            : [{ value: '', label: 'Add a category first' }]
+        }
       />
       <Input
         label="Description"

@@ -51,13 +51,17 @@ const GROUP_ORDER: ExpenseGroupKey[] = [
   'older',
 ];
 
+export function sortExpensesByRecent(expenses: Expense[]): Expense[] {
+  return [...expenses].sort(
+    (a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt),
+  );
+}
+
 export function groupExpensesByPeriod(expenses: Expense[]): ExpenseGroup[] {
   const buckets = new Map<ExpenseGroupKey, Expense[]>();
   for (const key of GROUP_ORDER) buckets.set(key, []);
 
-  const sorted = [...expenses].sort(
-    (a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt),
-  );
+  const sorted = sortExpensesByRecent(expenses);
 
   for (const expense of sorted) {
     const key = getExpenseGroupKey(expense.date);

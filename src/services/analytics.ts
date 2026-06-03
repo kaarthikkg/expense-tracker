@@ -58,19 +58,35 @@ export function spendingByCategory(
   expenses: Expense[],
   categories: Category[],
 ): CategorySpend[] {
-  const map = new Map<string, number>();
+  const catMap = new Map(categories.map((c) => [c.id, c]));
+  const totals = new Map<string, number>();
+
   for (const e of onlyExpenses(expenses)) {
-    map.set(e.categoryId, (map.get(e.categoryId) ?? 0) + e.amount);
+    const amount = Number(e.amount);
+    if (!Number.isFinite(amount) || amount <= 0) continue;
+    totals.set(e.categoryId, (totals.get(e.categoryId) ?? 0) + amount);
   }
-  return categories
-    .map((c) => ({
-      categoryId: c.id,
-      name: c.name,
-      color: c.color,
-      total: map.get(c.id) ?? 0,
-    }))
-    .filter((x) => x.total > 0)
+
+  return Array.from(totals.entries())
+    .map(([categoryId, total]) => {
+      const cat = catMap.get(categoryId);
+      return {
+        categoryId,
+        name: cat?.name ?? 'Uncategorized',
+        color: cat?.color ?? '#64748b',
+        total,
+      };
+    })
     .sort((a, b) => b.total - a.total);
+}
+
+/** Expense totals by category for a single calendar month (expenses only). */
+export function monthSpendingByCategory(
+  expenses: Expense[],
+  categories: Category[],
+  monthKey?: string,
+): CategorySpend[] {
+  return spendingByCategory(getMonthExpenses(expenses, monthKey), categories);
 }
 
 export function incomeByCategory(

@@ -1,9 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import {
-  deduplicateCategories,
-  ensureDefaultCategories,
-  ensureDefaultIncomeCategories,
-} from '@/db/categories';
+import { deduplicateCategories, seedInitialCategoriesIfEmpty } from '@/db/categories';
 import type {
   AppSettings,
   Budget,
@@ -12,8 +8,6 @@ import type {
   RecurringExpense,
   SavingsGoal,
 } from '@/types';
-
-export { DEFAULT_CATEGORIES } from '@/db/categories';
 
 const DEFAULT_SETTINGS: AppSettings = {
   id: 'app',
@@ -75,8 +69,7 @@ export async function seedDatabase(): Promise<void> {
   seedPromise = (async () => {
     await migrateTransactionTypes();
     await deduplicateCategories();
-    await ensureDefaultCategories();
-    await ensureDefaultIncomeCategories();
+    await seedInitialCategoriesIfEmpty();
 
     const settings = await db.settings.get('app');
     if (!settings) {

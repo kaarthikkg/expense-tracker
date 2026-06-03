@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { db } from '@/db';
 import type { Expense } from '@/types';
+import { sortExpensesByRecent } from '@/utils/expenseGroups';
 import { createId } from '@/utils/id';
 
 interface ExpenseState {
@@ -20,7 +21,7 @@ export const useExpenseStore = create<ExpenseState>((set, get) => ({
 
   load: async () => {
     set({ loading: true });
-    const expenses = await db.expenses.orderBy('date').reverse().toArray();
+    const expenses = sortExpensesByRecent(await db.expenses.toArray());
     set({ expenses, loading: false });
   },
 
