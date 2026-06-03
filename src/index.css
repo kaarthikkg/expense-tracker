@@ -1,0 +1,160 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Theme tokens — :root = light, .dark = cockpit */
+:root {
+  --cockpit-bg: #eef2f8;
+  --cockpit-panel: #ffffff;
+  --cockpit-elevated: #f8fafc;
+  --cockpit-border: rgb(15 23 42 / 0.08);
+  --cockpit-border-strong: rgb(15 23 42 / 0.14);
+  --accent-muted: rgb(91 140 255 / 0.14);
+  --fg: #0f172a;
+  --fg-secondary: #475569;
+  --fg-muted: #64748b;
+  --surface-hover: rgb(15 23 42 / 0.05);
+  --surface-muted: rgb(15 23 42 / 0.06);
+  --surface-active: rgb(15 23 42 / 0.08);
+  --track: rgb(15 23 42 / 0.08);
+  --chart-grid: rgb(15 23 42 / 0.08);
+  --glass-bg: rgb(255 255 255 / 0.92);
+  --glass-shadow:
+    0 0 0 1px rgb(255 255 255 / 1) inset,
+    0 1px 2px rgb(15 23 42 / 0.04),
+    0 8px 32px -8px rgb(15 23 42 / 0.12);
+  --metric-glow: 0 0 32px rgb(91 140 255 / 0.2);
+  --body-gradient-1: rgb(91 140 255 / 0.1);
+  --body-gradient-2: rgb(124 58 237 / 0.05);
+  --selection-bg: rgb(91 140 255 / 0.25);
+  --ring-offset: #ffffff;
+}
+
+html.dark {
+  --cockpit-bg: #0b1020;
+  --cockpit-panel: #111827;
+  --cockpit-elevated: #1a2332;
+  --cockpit-border: rgb(255 255 255 / 0.06);
+  --cockpit-border-strong: rgb(255 255 255 / 0.1);
+  --accent-muted: rgb(91 140 255 / 0.15);
+  --fg: #f8fafc;
+  --fg-secondary: #94a3b8;
+  --fg-muted: #64748b;
+  --surface-hover: rgb(255 255 255 / 0.05);
+  --surface-muted: rgb(255 255 255 / 0.06);
+  --surface-active: rgb(255 255 255 / 0.1);
+  --track: rgb(255 255 255 / 0.06);
+  --chart-grid: rgb(255 255 255 / 0.06);
+  --glass-bg: rgb(17 24 39 / 0.78);
+  --glass-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.04) inset,
+    0 4px 24px -4px rgb(0 0 0 / 0.45),
+    0 12px 48px -12px rgb(0 0 0 / 0.35);
+  --metric-glow: 0 0 40px rgb(91 140 255 / 0.28);
+  --body-gradient-1: rgb(91 140 255 / 0.14);
+  --body-gradient-2: rgb(91 140 255 / 0.06);
+  --selection-bg: rgb(91 140 255 / 0.35);
+  --ring-offset: #111827;
+}
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --color-cockpit-bg: var(--cockpit-bg);
+  --color-cockpit-panel: var(--cockpit-panel);
+  --color-cockpit-elevated: var(--cockpit-elevated);
+  --color-cockpit-border: var(--cockpit-border);
+  --color-cockpit-border-strong: var(--cockpit-border-strong);
+  --color-accent: #5b8cff;
+  --color-accent-muted: var(--accent-muted);
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+  --color-danger: #dc2626;
+  --color-fg: var(--fg);
+  --color-fg-secondary: var(--fg-secondary);
+  --color-fg-muted: var(--fg-muted);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-active: var(--surface-active);
+  --color-track: var(--track);
+
+  /* Legacy aliases used in arbitrary values */
+  --color-text-primary: var(--fg);
+  --color-text-secondary: var(--fg-secondary);
+  --color-text-muted: var(--fg-muted);
+}
+
+@layer base {
+  html {
+    @apply antialiased;
+  }
+
+  body {
+    @apply min-h-dvh font-sans text-fg;
+    background-color: var(--cockpit-bg);
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, var(--body-gradient-1), transparent),
+      radial-gradient(ellipse 60% 40% at 100% 0%, var(--body-gradient-2), transparent);
+  }
+
+  #root {
+    @apply min-h-dvh;
+  }
+
+  ::selection {
+    background: var(--selection-bg);
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--cockpit-border);
+    box-shadow: var(--glass-shadow);
+  }
+
+  .metric-glow {
+    text-shadow: var(--metric-glow);
+  }
+
+  .gradient-accent {
+    background: linear-gradient(135deg, #5b8cff 0%, #6366f1 45%, #5b8cff 100%);
+  }
+
+  .hover-surface {
+    @apply transition;
+  }
+  .hover-surface:hover {
+    background-color: var(--surface-hover);
+  }
+
+  .surface-muted {
+    background-color: var(--surface-muted);
+  }
+
+  .surface-active {
+    background-color: var(--surface-active);
+  }
+
+  .text-fg {
+    color: var(--fg);
+  }
+  .text-fg-secondary {
+    color: var(--fg-secondary);
+  }
+  .text-fg-muted {
+    color: var(--fg-muted);
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: var(--cockpit-border-strong);
+    border-radius: 3px;
+  }
+}
