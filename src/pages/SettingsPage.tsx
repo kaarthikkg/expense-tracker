@@ -11,6 +11,8 @@ import { useCategoryStore } from '@/store/categoryStore';
 import { useBudgetStore } from '@/store/budgetStore';
 import { useGoalStore } from '@/store/goalStore';
 import { useRecurringStore } from '@/store/recurringStore';
+import { useHoldingStore } from '@/store/holdingStore';
+import { useLoanStore } from '@/store/loanStore';
 import {
   buildExportData,
   downloadCsv,
@@ -38,6 +40,8 @@ export function SettingsPage() {
       useBudgetStore.getState().load(),
       useGoalStore.getState().load(),
       useRecurringStore.getState().load(),
+      useHoldingStore.getState().load(),
+      useLoanStore.getState().load(),
       useSettingsStore.getState().load(),
     ]);
   };

@@ -6,6 +6,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 interface CategoryPieChartProps {
   data: CategorySpend[];
   monthKey?: string;
+  emptyLabel?: string;
   height?: number;
   /** When set, remaining categories are grouped (default: show every category). */
   maxSlices?: number;
@@ -86,6 +87,7 @@ function PieTooltip({
 export function CategoryPieChart({
   data,
   monthKey = '',
+  emptyLabel = 'No spending this month yet',
   height = 260,
   maxSlices,
 }: CategoryPieChartProps) {
@@ -100,7 +102,7 @@ export function CategoryPieChart({
         className="flex items-center justify-center text-sm text-fg-muted"
         style={{ height }}
       >
-        No spending this month yet
+        {emptyLabel}
       </div>
     );
   }

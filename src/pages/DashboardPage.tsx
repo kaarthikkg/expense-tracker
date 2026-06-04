@@ -7,6 +7,8 @@ import { ExpenseForm } from '@/components/expenses/ExpenseForm';
 import { PageShell } from '@/components/layout/PageShell';
 import { DashboardSection } from '@/components/dashboard/DashboardSection';
 import { InsightFeed } from '@/components/dashboard/InsightFeed';
+import { NetWorthPanel } from '@/components/dashboard/NetWorthPanel';
+import { useNetWorth } from '@/hooks/useNetWorth';
 import { AnimatedMetric } from '@/components/ui/AnimatedMetric';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { TrendAreaChart } from '@/components/charts/TrendAreaChart';
@@ -58,20 +60,23 @@ export function DashboardPage() {
   const [addOpen, setAddOpen] = useState(false);
 
   const m = useDashboardMetrics(expenses, categories, budgets, goals);
+  const netWorth = useNetWorth();
   const recent = expenses;
 
   return (
     <PageShell
       title="Dashboard"
-      subtitle={`Overview for ${m.monthLabel}`}
+      subtitle={`${m.monthLabel} · cashflow & wealth`}
       action={
         <Button onClick={() => setAddOpen(true)} size="sm">
           + Log transaction
         </Button>
       }
     >
+      <NetWorthPanel data={netWorth} />
+
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <SummaryStat label="Spent this month" sub="Expenses only" delay={0}>
+        <SummaryStat label="Spent this month" sub="Expenses only" delay={0.05}>
           <span className="metric-glow text-fg">
             <AnimatedMetric value={m.monthTotal} />
           </span>
@@ -93,13 +98,13 @@ export function DashboardPage() {
           )}
         </SummaryStat>
 
-        <SummaryStat label="Income" sub="This month" delay={0.05}>
+        <SummaryStat label="Income" sub="This month" delay={0.1}>
           <span className="text-success metric-glow">
             <AnimatedMetric value={m.monthIncome} />
           </span>
         </SummaryStat>
 
-        <SummaryStat label="Net cash flow" sub="Income − expenses" delay={0.1}>
+        <SummaryStat label="Net cash flow" sub="Income − expenses" delay={0.15}>
           <span
             className={`metric-glow ${m.netCashFlow >= 0 ? 'text-success' : 'text-danger'}`}
           >
@@ -111,7 +116,7 @@ export function DashboardPage() {
         <SummaryStat
           label="Savings goals"
           sub={goals.length > 0 ? 'Average progress' : 'No goals set'}
-          delay={0.15}
+          delay={0.2}
         >
           <span className={goals.length > 0 ? 'text-success metric-glow' : 'text-fg-muted'}>
             {goals.length > 0 ? `${m.savingsMomentum}%` : '—'}

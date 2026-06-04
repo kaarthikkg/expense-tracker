@@ -40,6 +40,8 @@ src/
 - **goals** — savings targets with current amount
 - **recurringExpenses** — frequency + template expense fields
 - **settings** — theme, currency, single row id `app`
+- **holdings** — investments: where (`name`), `assetType`, `investedAmount`, `currentValue`, notes
+- **loans** — `name`, `loanType`, `principalAmount`, `outstandingAmount`, optional `monthlyEmi`, optional `interestRate`, `startDate`, notes
 
 ## UX
 
@@ -70,6 +72,9 @@ src/
 - Recent transactions: list **all** expenses sorted by date then `createdAt` (newest first); expense store uses `sortExpensesByRecent`; scrollable panel on dashboard (was capped at 5).
 - Pie chart: `monthSpendingByCategory` + strict `isInMonth` date range; only categories with expenses in current month; Recharts remount key + no animation to avoid stale/ghost slices.
 - Pie chart no longer hides categories 7+ as **Other** by default — all categories show by name; optional `maxSlices` groups tail as **More categories (N)** with a breakdown in the legend.
+- **Portfolio tracking** (`/portfolio`): Dexie `holdings` (v4); each row is **where invested** + **total invested** + **current total value** (no symbols/units); summary & allocation pie; JSON backup v2. No live market API.
+- **Loan tracking** (`/loans`): Dexie `loans` (v5); original amount, **outstanding balance**, optional **monthly EMI** (checkbox — off for non-EMI loans); repayment progress; totals for outstanding & monthly EMI; pie by loan type; JSON backup v3.
+- **Net worth**: `computeNetWorth` — portfolio **current value** (assets) minus loan **outstanding** (liabilities); **NetWorthPanel** on dashboard; compact strip on Portfolio & Loans pages.
 
 ### Run locally
 

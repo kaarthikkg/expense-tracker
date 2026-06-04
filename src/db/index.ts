@@ -5,6 +5,8 @@ import type {
   Budget,
   Category,
   Expense,
+  Holding,
+  Loan,
   RecurringExpense,
   SavingsGoal,
 } from '@/types';
@@ -22,6 +24,8 @@ export class ExpenseDatabase extends Dexie {
   goals!: Table<SavingsGoal, string>;
   settings!: Table<AppSettings, string>;
   recurringExpenses!: Table<RecurringExpense, string>;
+  holdings!: Table<Holding, string>;
+  loans!: Table<Loan, string>;
 
   constructor() {
     super('ExpenseTrackerDB');
@@ -49,6 +53,55 @@ export class ExpenseDatabase extends Dexie {
       settings: 'id',
       recurringExpenses: 'id, isActive, categoryId',
     });
+    this.version(4).stores({
+      expenses: 'id, date, categoryId, createdAt, type',
+      categories: 'id, name',
+      budgets: 'id, month, categoryId',
+      goals: 'id',
+      settings: 'id',
+      recurringExpenses: 'id, isActive, categoryId',
+      holdings: 'id, assetType, symbol, name, updatedAt',
+    });
+    this.version(5).stores({
+      expenses: 'id, date, categoryId, createdAt, type',
+      categories: 'id, name',
+      budgets: 'id, month, categoryId',
+      goals: 'id',
+      settings: 'id',
+      recurringExpenses: 'id, isActive, categoryId',
+      holdings: 'id, assetType, name, updatedAt',
+      loans: 'id, loanType, name, updatedAt',
+    });
+  }
+}
+
+type LegacyHoldingRow = Holding & {
+  quantity?: number;
+  avgBuyPrice?: number;
+  currentPrice?: number;
+  symbol?: string;
+};
+
+/** Convert per-unit holdings to total invested / current value. */
+async function migrateHoldingsToTotals(): Promise<void> {
+  const all = (await db.holdings.toArray()) as LegacyHoldingRow[];
+  for (const h of all) {
+    if (typeof h.investedAmount === 'number' && typeof h.currentValue === 'number') {
+      continue;
+    }
+    const qty = h.quantity ?? 1;
+    const avg = h.avgBuyPrice ?? 0;
+    const price = h.currentPrice ?? avg;
+    await db.holdings.put({
+      id: h.id,
+      name: h.name,
+      assetType: h.assetType ?? 'other',
+      investedAmount: qty * avg,
+      currentValue: qty * price,
+      notes: h.notes,
+      createdAt: h.createdAt,
+      updatedAt: h.updatedAt,
+    });
   }
 }
 
@@ -68,6 +121,7 @@ export async function seedDatabase(): Promise<void> {
 
   seedPromise = (async () => {
     await migrateTransactionTypes();
+    await migrateHoldingsToTotals();
     await deduplicateCategories();
     await seedInitialCategoriesIfEmpty();
 

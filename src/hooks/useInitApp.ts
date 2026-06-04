@@ -6,6 +6,8 @@ import { useCategoryStore } from '@/store/categoryStore';
 import { useExpenseStore } from '@/store/expenseStore';
 import { useGoalStore } from '@/store/goalStore';
 import { useRecurringStore } from '@/store/recurringStore';
+import { useHoldingStore } from '@/store/holdingStore';
+import { useLoanStore } from '@/store/loanStore';
 import { useSettingsStore } from '@/store/settingsStore';
 
 export function useInitApp(): { ready: boolean } {
@@ -23,6 +25,8 @@ export function useInitApp(): { ready: boolean } {
         useBudgetStore.getState().load(),
         useGoalStore.getState().load(),
         useRecurringStore.getState().load(),
+        useHoldingStore.getState().load(),
+        useLoanStore.getState().load(),
         useSettingsStore.getState().load(),
       ]);
 

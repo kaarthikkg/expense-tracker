@@ -59,6 +59,57 @@ export interface AppSettings {
   currency: CurrencyCode;
 }
 
+export type AssetType =
+  | 'stock'
+  | 'mutual_fund'
+  | 'etf'
+  | 'crypto'
+  | 'fixed_deposit'
+  | 'gold'
+  | 'other';
+
+export interface Holding {
+  id: string;
+  /** Where you invested (fund, broker, asset label) */
+  name: string;
+  assetType: AssetType;
+  /** Total amount put in */
+  investedAmount: number;
+  /** Current total value */
+  currentValue: number;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type LoanType =
+  | 'home'
+  | 'personal'
+  | 'car'
+  | 'education'
+  | 'credit_card'
+  | 'business'
+  | 'other';
+
+export interface Loan {
+  id: string;
+  /** Lender or loan label */
+  name: string;
+  loanType: LoanType;
+  /** Original borrowed amount */
+  principalAmount: number;
+  /** Current balance left */
+  outstandingAmount: number;
+  /** Omit or 0 when there is no fixed monthly EMI */
+  monthlyEmi?: number;
+  /** Annual interest % (optional) */
+  interestRate?: number;
+  startDate?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ExportData {
   version: number;
   exportedAt: string;
@@ -67,5 +118,7 @@ export interface ExportData {
   budgets: Budget[];
   goals: SavingsGoal[];
   recurringExpenses: RecurringExpense[];
+  holdings?: Holding[];
+  loans?: Loan[];
   settings: AppSettings;
 }

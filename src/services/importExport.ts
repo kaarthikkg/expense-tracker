@@ -2,16 +2,18 @@ import { db } from '@/db';
 import type { ExportData } from '@/types';
 import { getTransactionType } from '@/utils/transaction';
 
-const EXPORT_VERSION = 1;
+const EXPORT_VERSION = 3;
 
 export async function buildExportData(): Promise<ExportData> {
-  const [expenses, categories, budgets, goals, recurringExpenses, settings] =
+  const [expenses, categories, budgets, goals, recurringExpenses, holdings, loans, settings] =
     await Promise.all([
       db.expenses.toArray(),
       db.categories.toArray(),
       db.budgets.toArray(),
       db.goals.toArray(),
       db.recurringExpenses.toArray(),
+      db.holdings.toArray(),
+      db.loans.toArray(),
       db.settings.get('app'),
     ]);
 
@@ -23,6 +25,8 @@ export async function buildExportData(): Promise<ExportData> {
     budgets,
     goals,
     recurringExpenses,
+    holdings,
+    loans,
     settings: settings ?? { id: 'app', theme: 'system', currency: 'INR' },
   };
 }
@@ -76,6 +80,8 @@ export async function importBackup(data: ExportData): Promise<void> {
       db.budgets,
       db.goals,
       db.recurringExpenses,
+      db.holdings,
+      db.loans,
       db.settings,
     ],
     async () => {
@@ -84,12 +90,16 @@ export async function importBackup(data: ExportData): Promise<void> {
       await db.budgets.clear();
       await db.goals.clear();
       await db.recurringExpenses.clear();
+      await db.holdings.clear();
+      await db.loans.clear();
 
       await db.expenses.bulkPut(data.expenses);
       await db.categories.bulkPut(data.categories);
       await db.budgets.bulkPut(data.budgets);
       await db.goals.bulkPut(data.goals);
       await db.recurringExpenses.bulkPut(data.recurringExpenses);
+      await db.holdings.bulkPut(data.holdings ?? []);
+      await db.loans.bulkPut(data.loans ?? []);
       await db.settings.put(data.settings);
     },
   );

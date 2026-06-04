@@ -9,6 +9,8 @@ import {
   IconDashboard,
   IconMore,
   IconPlus,
+  IconLoans,
+  IconPortfolio,
   IconTransactions,
 } from './NavIcons';
 
@@ -16,6 +18,8 @@ const sidebarNav = [
   { to: '/', label: 'Terminal', Icon: IconDashboard, end: true },
   { to: '/expenses', label: 'Flow', Icon: IconTransactions },
   { to: '/budgets', label: 'Burn', Icon: IconBudget },
+  { to: '/portfolio', label: 'Portfolio', Icon: IconPortfolio },
+  { to: '/loans', label: 'Loans', Icon: IconLoans },
   { to: '/reports', label: 'Analytics', Icon: IconTransactions },
   { to: '/categories', label: 'Categories', Icon: IconMore },
   { to: '/goals', label: 'Momentum', Icon: IconBudget },

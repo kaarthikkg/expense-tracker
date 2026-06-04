@@ -4,6 +4,8 @@ import { PageShell } from '@/components/layout/PageShell';
 
 const links = [
   { to: '/categories', label: 'Categories', desc: 'Flow classification' },
+  { to: '/portfolio', label: 'Portfolio', desc: 'Holdings & investment P&L' },
+  { to: '/loans', label: 'Loans', desc: 'Outstanding, EMI & repayment' },
   { to: '/goals', label: 'Savings Momentum', desc: 'Target tracking' },
   { to: '/recurring', label: 'Recurring', desc: 'Automated flows' },
   { to: '/reports', label: 'Analytics', desc: 'Deep intelligence' },
