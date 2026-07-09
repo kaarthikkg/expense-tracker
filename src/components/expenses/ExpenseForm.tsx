@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Expense, TransactionType } from '@/types';
 import { useCategoryStore } from '@/store/categoryStore';
+import { usePaymentSourceStore } from '@/store/paymentSourceStore';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
@@ -17,6 +18,7 @@ interface ExpenseFormProps {
   onSubmit: (data: {
     amount: number;
     categoryId: string;
+    paymentSourceId?: string;
     description: string;
     date: string;
     type: TransactionType;
@@ -31,6 +33,7 @@ export function ExpenseForm({
   onCancel,
 }: ExpenseFormProps) {
   const categories = useCategoryStore((s) => s.categories);
+  const paymentSources = usePaymentSourceStore((s) => s.paymentSources);
   const startType = initial ? getTransactionType(initial) : defaultType;
 
   const [type, setType] = useState<TransactionType>(startType);
@@ -38,11 +41,16 @@ export function ExpenseForm({
   const [categoryId, setCategoryId] = useState(
     initial?.categoryId ?? getDefaultCategoryId(categories, startType),
   );
+  const [paymentSourceId, setPaymentSourceId] = useState(initial?.paymentSourceId ?? '');
   const [description, setDescription] = useState(initial?.description ?? '');
   const [date, setDate] = useState(initial?.date ?? toDateString());
   const [error, setError] = useState('');
 
   const categoryOptions = categoriesForTransactionType(categories, type);
+  const paymentOptions = [
+    { value: '', label: '— Not set —' },
+    ...paymentSources.map((p) => ({ value: p.id, label: p.name })),
+  ];
 
   const handleTypeChange = (next: TransactionType) => {
     setType(next);
@@ -67,7 +75,14 @@ export function ExpenseForm({
       return;
     }
     setError('');
-    await onSubmit({ amount: num, categoryId, description, date, type });
+    await onSubmit({
+      amount: num,
+      categoryId,
+      paymentSourceId: paymentSourceId || undefined,
+      description,
+      date,
+      type,
+    });
   };
 
   const isIncome = type === 'income';
@@ -110,6 +125,16 @@ export function ExpenseForm({
           categoryOptions.length > 0
             ? categoryOptions.map((c) => ({ value: c.id, label: c.name }))
             : [{ value: '', label: 'Add a category first' }]
+        }
+      />
+      <Select
+        label="Card / bank"
+        value={paymentSourceId}
+        onChange={(e) => setPaymentSourceId(e.target.value)}
+        options={
+          paymentSources.length > 0
+            ? paymentOptions
+            : [{ value: '', label: 'Add accounts under Cards & banks' }]
         }
       />
       <Input

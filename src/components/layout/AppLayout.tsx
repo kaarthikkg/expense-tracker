@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Modal } from '@/components/ui/Modal';
 import { ExpenseForm } from '@/components/expenses/ExpenseForm';
+import { DataSourceBadge } from '@/components/sync/DataSourceBadge';
 import { useExpenseStore } from '@/store/expenseStore';
 import {
   IconBudget,
@@ -22,6 +23,7 @@ const sidebarNav = [
   { to: '/loans', label: 'Loans', Icon: IconLoans },
   { to: '/reports', label: 'Analytics', Icon: IconTransactions },
   { to: '/categories', label: 'Categories', Icon: IconMore },
+  { to: '/accounts', label: 'Cards & banks', Icon: IconMore },
   { to: '/goals', label: 'Momentum', Icon: IconBudget },
   { to: '/recurring', label: 'Recurring', Icon: IconTransactions },
   { to: '/settings', label: 'System', Icon: IconMore },
@@ -55,6 +57,9 @@ export function AppLayout() {
               </p>
             </div>
           </div>
+          <div className="mt-3">
+            <DataSourceBadge />
+          </div>
         </div>
         <nav className="flex-1 space-y-0.5 overflow-y-auto p-3 scrollbar-thin">
           {sidebarNav.map(({ to, label, Icon, end }) => (
@@ -78,6 +83,9 @@ export function AppLayout() {
       </aside>
 
       <main className="flex min-h-dvh flex-1 flex-col md:pl-60">
+        <div className="flex items-center justify-end px-4 pt-3 md:hidden">
+          <DataSourceBadge compact />
+        </div>
         <div className="flex-1 px-4 py-6 pb-28 md:px-8 md:py-8 md:pb-8">
           <Outlet />
         </div>

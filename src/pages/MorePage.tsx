@@ -4,6 +4,7 @@ import { PageShell } from '@/components/layout/PageShell';
 
 const links = [
   { to: '/categories', label: 'Categories', desc: 'Flow classification' },
+  { to: '/accounts', label: 'Cards & banks', desc: 'Transaction source tagging' },
   { to: '/portfolio', label: 'Portfolio', desc: 'Holdings & investment P&L' },
   { to: '/loans', label: 'Loans', desc: 'Outstanding, EMI & repayment' },
   { to: '/goals', label: 'Savings Momentum', desc: 'Target tracking' },

@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { PageShell } from '@/components/layout/PageShell';
+import { CloudSyncCard } from '@/components/sync/CloudSyncCard';
 import { useSettingsStore } from '@/store/settingsStore';
 import { useExpenseStore } from '@/store/expenseStore';
 import { useCategoryStore } from '@/store/categoryStore';
@@ -13,6 +14,7 @@ import { useGoalStore } from '@/store/goalStore';
 import { useRecurringStore } from '@/store/recurringStore';
 import { useHoldingStore } from '@/store/holdingStore';
 import { useLoanStore } from '@/store/loanStore';
+import { usePaymentSourceStore } from '@/store/paymentSourceStore';
 import {
   buildExportData,
   downloadCsv,
@@ -42,6 +44,7 @@ export function SettingsPage() {
       useRecurringStore.getState().load(),
       useHoldingStore.getState().load(),
       useLoanStore.getState().load(),
+      usePaymentSourceStore.getState().load(),
       useSettingsStore.getState().load(),
     ]);
   };
@@ -53,7 +56,7 @@ export function SettingsPage() {
 
   const handleExportCsv = async () => {
     const data = await buildExportData();
-    const csv = expensesToCsv(data.expenses, data.categories);
+    const csv = expensesToCsv(data.expenses, data.categories, data.paymentSources);
     downloadCsv(csv, `expenses-${Date.now()}.csv`);
   };
 
@@ -103,6 +106,8 @@ export function SettingsPage() {
         />
       </Card>
 
+      <CloudSyncCard />
+
       <Card title="Monthly Excel export">
         <p className="mb-4 text-sm text-fg-secondary">
           Exports every expense for the selected month on the <strong>All expenses</strong> sheet
@@ -116,7 +121,7 @@ export function SettingsPage() {
 
       <Card title="Data operations">
         <p className="mb-4 text-sm text-fg-secondary">
-          All data is local. Export regularly.
+          Local IndexedDB backup. When signed in, cloud sync also keeps a copy in Firebase.
         </p>
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => void handleExportJson()}>Export JSON</Button>

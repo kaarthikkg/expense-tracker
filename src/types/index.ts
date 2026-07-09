@@ -4,11 +4,29 @@ export interface Expense {
   id: string;
   amount: number;
   categoryId: string;
+  /** Card, bank, wallet, etc. */
+  paymentSourceId?: string;
   description: string;
   date: string;
   createdAt: string;
   /** Omit on legacy rows — treated as `expense` */
   type?: TransactionType;
+}
+
+export type PaymentSourceKind =
+  | 'bank'
+  | 'credit_card'
+  | 'debit_card'
+  | 'wallet'
+  | 'upi'
+  | 'cash'
+  | 'other';
+
+export interface PaymentSource {
+  id: string;
+  name: string;
+  kind: PaymentSourceKind;
+  color: string;
 }
 
 export type CategoryKind = 'expense' | 'income';
@@ -115,6 +133,7 @@ export interface ExportData {
   exportedAt: string;
   expenses: Expense[];
   categories: Category[];
+  paymentSources?: PaymentSource[];
   budgets: Budget[];
   goals: SavingsGoal[];
   recurringExpenses: RecurringExpense[];

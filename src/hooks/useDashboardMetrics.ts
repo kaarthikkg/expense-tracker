@@ -32,9 +32,9 @@ export function useDashboardMetrics(
   categories: Category[],
   budgets: Budget[],
   goals: SavingsGoal[],
+  monthKey: string = getMonthKey(),
 ): DashboardMetrics {
   return useMemo(() => {
-    const monthKey = getMonthKey();
     const monthExpenseRows = getMonthExpenses(expenses, monthKey);
     const monthIncomeRows = getMonthIncome(expenses, monthKey);
     const monthTotal = sumExpenses(monthExpenseRows);
@@ -67,7 +67,7 @@ export function useDashboardMetrics(
       budgetRemaining: monthlyBudget ? monthlyBudget.amount - monthTotal : null,
       trend: dailyTrendForMonth(expenses, monthKey),
       categoryBreakdown: monthSpendingByCategory(expenses, categories, monthKey),
-      insights: generateInsights(expenses, categories),
+      insights: generateInsights(expenses, categories, monthKey),
     };
-  }, [expenses, categories, budgets, goals]);
+  }, [expenses, categories, budgets, goals, monthKey]);
 }

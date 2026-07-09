@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import type { Category, Expense } from '@/types';
+import type { Category, Expense, PaymentSource } from '@/types';
 import { groupExpensesByPeriod } from '@/utils/expenseGroups';
 import { useCurrency } from '@/hooks/useCurrency';
 import { formatDisplayDate } from '@/utils/dates';
@@ -9,6 +9,7 @@ import { MerchantAvatar } from './MerchantAvatar';
 interface ExpenseTimelineProps {
   expenses: Expense[];
   categoryMap: Map<string, Category>;
+  paymentSourceMap?: Map<string, PaymentSource>;
   onView: (expense: Expense) => void;
   onEdit: (expense: Expense) => void;
   onDelete: (expense: Expense) => void;
@@ -17,6 +18,7 @@ interface ExpenseTimelineProps {
 export function ExpenseTimeline({
   expenses,
   categoryMap,
+  paymentSourceMap,
   onView,
   onEdit,
   onDelete,
@@ -43,6 +45,9 @@ export function ExpenseTimeline({
 
             {group.items.map((expense, i) => {
               const category = categoryMap.get(expense.categoryId);
+              const paymentSource = expense.paymentSourceId
+                ? paymentSourceMap?.get(expense.paymentSourceId)
+                : undefined;
               const income = isIncome(expense);
               return (
                 <motion.article
@@ -86,6 +91,17 @@ export function ExpenseTimeline({
                               }}
                             >
                               {category.name}
+                            </span>
+                          )}
+                          {paymentSource && (
+                            <span
+                              className="inline-flex rounded-md px-2 py-0.5 text-[10px] font-medium"
+                              style={{
+                                backgroundColor: `${paymentSource.color}18`,
+                                color: paymentSource.color,
+                              }}
+                            >
+                              {paymentSource.name}
                             </span>
                           )}
                           <span className="text-xs text-fg-muted">

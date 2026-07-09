@@ -6,6 +6,12 @@ export function getMonthKey(d: Date = new Date()): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
+/** Shift a `YYYY-MM` key by `delta` months (negative = earlier). */
+export function shiftMonthKey(monthKey: string, delta: number): string {
+  const { year, month } = parseMonthKey(monthKey);
+  return getMonthKey(new Date(year, month - 1 + delta, 1));
+}
+
 export function parseMonthKey(month: string): { year: number; month: number } {
   const [y, m] = month.split('-').map(Number);
   return { year: y, month: m };

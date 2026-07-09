@@ -20,7 +20,8 @@ import { useExpenseStore } from '@/store/expenseStore';
 import { useCategoryStore } from '@/store/categoryStore';
 import { useBudgetStore } from '@/store/budgetStore';
 import { useGoalStore } from '@/store/goalStore';
-import { formatDisplayDate } from '@/utils/dates';
+import { usePaymentSourceStore } from '@/store/paymentSourceStore';
+import { formatDisplayDate, getMonthKey, shiftMonthKey } from '@/utils/dates';
 import { isIncome } from '@/utils/transaction';
 
 function SummaryStat({
@@ -56,12 +57,17 @@ export function DashboardPage() {
   const categories = useCategoryStore((s) => s.categories);
   const budgets = useBudgetStore((s) => s.budgets);
   const goals = useGoalStore((s) => s.goals);
+  const paymentSources = usePaymentSourceStore((s) => s.paymentSources);
   const { format } = useCurrency();
   const [addOpen, setAddOpen] = useState(false);
+  const currentMonthKey = getMonthKey();
+  const [selectedMonth, setSelectedMonth] = useState(currentMonthKey);
+  const isCurrentMonth = selectedMonth === currentMonthKey;
 
-  const m = useDashboardMetrics(expenses, categories, budgets, goals);
+  const m = useDashboardMetrics(expenses, categories, budgets, goals, selectedMonth);
   const netWorth = useNetWorth();
   const recent = expenses;
+  const periodLabel = isCurrentMonth ? 'This month' : m.monthLabel;
 
   return (
     <PageShell
@@ -75,8 +81,62 @@ export function DashboardPage() {
     >
       <NetWorthPanel data={netWorth} />
 
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="glass-panel flex flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-3"
+      >
+        <div className="min-w-0">
+          <p className="text-[11px] font-medium uppercase tracking-widest text-fg-muted">
+            Monthly insights
+          </p>
+          <p className="mt-0.5 text-sm font-semibold text-fg">{m.monthLabel}</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            aria-label="Previous month"
+            onClick={() => setSelectedMonth((prev) => shiftMonthKey(prev, -1))}
+          >
+            ← Prev
+          </Button>
+          <input
+            type="month"
+            aria-label="Select month"
+            value={selectedMonth}
+            max={currentMonthKey}
+            onChange={(e) => {
+              const next = e.target.value;
+              if (next && next <= currentMonthKey) setSelectedMonth(next);
+            }}
+            className="rounded-lg border border-cockpit-border-strong bg-cockpit-panel px-3 py-1.5 text-sm text-fg outline-none transition focus:border-accent/50 focus:ring-2 focus:ring-accent/25 dark:bg-cockpit-elevated/80"
+          />
+          <Button
+            variant="secondary"
+            size="sm"
+            aria-label="Next month"
+            disabled={isCurrentMonth}
+            onClick={() =>
+              setSelectedMonth((prev) => {
+                const next = shiftMonthKey(prev, 1);
+                return next > currentMonthKey ? currentMonthKey : next;
+              })
+            }
+          >
+            Next →
+          </Button>
+          {!isCurrentMonth && (
+            <Button variant="ghost" size="sm" onClick={() => setSelectedMonth(currentMonthKey)}>
+              This month
+            </Button>
+          )}
+        </div>
+      </motion.div>
+
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <SummaryStat label="Spent this month" sub="Expenses only" delay={0.05}>
+        <SummaryStat label="Spent" sub={`${periodLabel} · expenses only`} delay={0.05}>
           <span className="metric-glow text-fg">
             <AnimatedMetric value={m.monthTotal} />
           </span>
@@ -98,7 +158,7 @@ export function DashboardPage() {
           )}
         </SummaryStat>
 
-        <SummaryStat label="Income" sub="This month" delay={0.1}>
+        <SummaryStat label="Income" sub={periodLabel} delay={0.1}>
           <span className="text-success metric-glow">
             <AnimatedMetric value={m.monthIncome} />
           </span>
@@ -127,7 +187,7 @@ export function DashboardPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         <DashboardSection
           title="Spending by category"
-          subtitle="Share of this month's expenses"
+          subtitle={`Share of ${isCurrentMonth ? "this month's" : `${m.monthLabel}'s`} expenses`}
           delay={0.2}
         >
           <CategoryPieChart
@@ -142,7 +202,7 @@ export function DashboardPage() {
           subtitle={
             m.topCategoryName
               ? `Top category: ${m.topCategoryName} (${format(m.topCategoryTotal)})`
-              : 'Expense trend through the month'
+              : `Expense trend through ${isCurrentMonth ? 'the month' : m.monthLabel}`
           }
           delay={0.25}
         >
@@ -153,7 +213,11 @@ export function DashboardPage() {
       <div className="grid gap-6 lg:grid-cols-5">
         <DashboardSection
           title="Insights"
-          subtitle="Based on your recent activity"
+          subtitle={
+            isCurrentMonth
+              ? 'Based on your recent activity'
+              : `Insights for ${m.monthLabel}`
+          }
           className="lg:col-span-2"
           delay={0.3}
         >
@@ -188,6 +252,7 @@ export function DashboardPage() {
             ) : (
               recent.map((e) => {
                 const cat = categories.find((c) => c.id === e.categoryId);
+                const account = paymentSources.find((p) => p.id === e.paymentSourceId);
                 const income = isIncome(e);
                 return (
                   <div
@@ -200,8 +265,8 @@ export function DashboardPage() {
                         {e.description || 'Transaction'}
                       </p>
                       <p className="text-xs text-fg-muted">
-                        {income ? 'Income' : 'Expense'} · {cat?.name} ·{' '}
-                        {formatDisplayDate(e.date)}
+                        {income ? 'Income' : 'Expense'} · {cat?.name}
+                        {account ? ` · ${account.name}` : ''} · {formatDisplayDate(e.date)}
                       </p>
                     </div>
                     <span

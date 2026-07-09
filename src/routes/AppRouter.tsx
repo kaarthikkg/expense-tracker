@@ -11,6 +11,7 @@ import { SettingsPage } from '@/pages/SettingsPage';
 import { MorePage } from '@/pages/MorePage';
 import { PortfolioPage } from '@/pages/PortfolioPage';
 import { LoansPage } from '@/pages/LoansPage';
+import { PaymentSourcesPage } from '@/pages/PaymentSourcesPage';
 
 function routerBasename(): string | undefined {
   const base = import.meta.env.BASE_URL;
@@ -29,6 +30,7 @@ export function AppRouter() {
           <Route path="budgets" element={<BudgetsPage />} />
           <Route path="portfolio" element={<PortfolioPage />} />
           <Route path="loans" element={<LoansPage />} />
+          <Route path="accounts" element={<PaymentSourcesPage />} />
           <Route path="goals" element={<GoalsPage />} />
           <Route path="recurring" element={<RecurringPage />} />
           <Route path="reports" element={<ReportsPage />} />

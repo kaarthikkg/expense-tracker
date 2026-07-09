@@ -1,5 +1,5 @@
 import type { Category, Expense } from '@/types';
-import { getMonthKey, isInMonth, isSameDay, toDateString } from '@/utils/dates';
+import { getMonthKey, isInMonth, isSameDay, parseMonthKey, toDateString } from '@/utils/dates';
 import { onlyExpenses, onlyIncome } from '@/utils/transaction';
 
 export interface CategorySpend {
@@ -130,11 +130,11 @@ export function dailyTrendForMonth(expenses: Expense[], monthKey: string): DaySp
 export function monthOverMonthChange(
   expenses: Expense[],
   categoryId: string,
+  monthKey?: string,
 ): { percent: number; direction: 'up' | 'down' | 'same' } | null {
-  const now = new Date();
-  const thisMonth = getMonthKey(now);
-  const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const lastMonth = getMonthKey(prev);
+  const thisMonth = monthKey ?? getMonthKey();
+  const { year, month } = parseMonthKey(thisMonth);
+  const lastMonth = getMonthKey(new Date(year, month - 2, 1));
 
   const thisTotal = sumExpenses(
     getMonthExpenses(expenses, thisMonth).filter((e) => e.categoryId === categoryId),
@@ -164,11 +164,12 @@ export function highestSpendingDay(expenses: Expense[]): DaySpend | null {
 export function generateInsights(
   expenses: Expense[],
   categories: Category[],
+  monthKey?: string,
 ): string[] {
   const insights: string[] = [];
-  const monthKey = getMonthKey();
-  const monthExpenses = getMonthExpenses(expenses, monthKey);
-  const monthIncome = getMonthIncome(expenses, monthKey);
+  const key = monthKey ?? getMonthKey();
+  const monthExpenses = getMonthExpenses(expenses, key);
+  const monthIncome = getMonthIncome(expenses, key);
   const spent = sumExpenses(monthExpenses);
   const earned = sumIncome(monthIncome);
 
@@ -195,7 +196,7 @@ export function generateInsights(
     );
   }
   for (const cat of categories) {
-    const change = monthOverMonthChange(expenses, cat.id);
+    const change = monthOverMonthChange(expenses, cat.id, key);
     if (change && change.direction !== 'same') {
       const word = change.direction === 'up' ? 'more' : 'less';
       insights.push(

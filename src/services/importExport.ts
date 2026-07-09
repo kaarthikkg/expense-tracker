@@ -2,26 +2,37 @@ import { db } from '@/db';
 import type { ExportData } from '@/types';
 import { getTransactionType } from '@/utils/transaction';
 
-const EXPORT_VERSION = 3;
+const EXPORT_VERSION = 4;
 
 export async function buildExportData(): Promise<ExportData> {
-  const [expenses, categories, budgets, goals, recurringExpenses, holdings, loans, settings] =
-    await Promise.all([
-      db.expenses.toArray(),
-      db.categories.toArray(),
-      db.budgets.toArray(),
-      db.goals.toArray(),
-      db.recurringExpenses.toArray(),
-      db.holdings.toArray(),
-      db.loans.toArray(),
-      db.settings.get('app'),
-    ]);
+  const [
+    expenses,
+    categories,
+    paymentSources,
+    budgets,
+    goals,
+    recurringExpenses,
+    holdings,
+    loans,
+    settings,
+  ] = await Promise.all([
+    db.expenses.toArray(),
+    db.categories.toArray(),
+    db.paymentSources.toArray(),
+    db.budgets.toArray(),
+    db.goals.toArray(),
+    db.recurringExpenses.toArray(),
+    db.holdings.toArray(),
+    db.loans.toArray(),
+    db.settings.get('app'),
+  ]);
 
   return {
     version: EXPORT_VERSION,
     exportedAt: new Date().toISOString(),
     expenses,
     categories,
+    paymentSources,
     budgets,
     goals,
     recurringExpenses,
@@ -44,15 +55,20 @@ export function downloadJson(data: ExportData, filename: string): void {
 export function expensesToCsv(
   expenses: ExportData['expenses'],
   categories: ExportData['categories'],
+  paymentSources: ExportData['paymentSources'] = [],
 ): string {
   const catMap = new Map(categories.map((c) => [c.id, c.name]));
-  const header = 'id,type,amount,category,description,date,createdAt';
+  const payMap = new Map(
+    (paymentSources ?? []).map((p) => [p.id, p.name]),
+  );
+  const header = 'id,type,amount,category,paymentSource,description,date,createdAt';
   const rows = expenses.map((e) =>
     [
       e.id,
       getTransactionType(e),
       e.amount,
       catMap.get(e.categoryId) ?? e.categoryId,
+      e.paymentSourceId ? (payMap.get(e.paymentSourceId) ?? e.paymentSourceId) : '',
       `"${e.description.replace(/"/g, '""')}"`,
       e.date,
       e.createdAt,
@@ -77,6 +93,7 @@ export async function importBackup(data: ExportData): Promise<void> {
     [
       db.expenses,
       db.categories,
+      db.paymentSources,
       db.budgets,
       db.goals,
       db.recurringExpenses,
@@ -87,6 +104,7 @@ export async function importBackup(data: ExportData): Promise<void> {
     async () => {
       await db.expenses.clear();
       await db.categories.clear();
+      await db.paymentSources.clear();
       await db.budgets.clear();
       await db.goals.clear();
       await db.recurringExpenses.clear();
@@ -95,6 +113,7 @@ export async function importBackup(data: ExportData): Promise<void> {
 
       await db.expenses.bulkPut(data.expenses);
       await db.categories.bulkPut(data.categories);
+      await db.paymentSources.bulkPut(data.paymentSources ?? []);
       await db.budgets.bulkPut(data.budgets);
       await db.goals.bulkPut(data.goals);
       await db.recurringExpenses.bulkPut(data.recurringExpenses);

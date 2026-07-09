@@ -5,8 +5,13 @@ import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
 
 export default defineConfig(({ mode }) => ({
-  // GitHub Pages needs /expense-tracker/; local dev uses /
-  base: mode === 'production' ? '/expense-tracker/' : '/',
+  // GitHub Pages: /expense-tracker/ | Firebase Hosting: / | dev: /
+  base:
+    mode === 'firebase'
+      ? '/'
+      : mode === 'production'
+        ? '/expense-tracker/'
+        : '/',
   plugins: [
     react(),
     tailwindcss(),
@@ -41,6 +46,30 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+    },
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return;
+          if (id.includes('firebase') || id.includes('@firebase')) return 'firebase';
+          if (id.includes('recharts') || id.includes('d3-') || id.includes('victory-vendor')) {
+            return 'charts';
+          }
+          if (id.includes('xlsx')) return 'xlsx';
+          if (id.includes('framer-motion')) return 'motion';
+          if (id.includes('dexie')) return 'dexie';
+          if (
+            id.includes('react-dom') ||
+            id.includes('react-router') ||
+            id.includes('/react/') ||
+            id.includes('\\react\\')
+          ) {
+            return 'react-vendor';
+          }
+        },
+      },
     },
   },
 }));

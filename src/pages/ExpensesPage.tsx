@@ -11,6 +11,7 @@ import { ExpenseTimeline } from '@/components/expenses/ExpenseTimeline';
 import { PageShell } from '@/components/layout/PageShell';
 import { useExpenseStore } from '@/store/expenseStore';
 import { useCategoryStore } from '@/store/categoryStore';
+import { usePaymentSourceStore } from '@/store/paymentSourceStore';
 import { filterByDateRange } from '@/services/analytics';
 import { formatDisplayDate } from '@/utils/dates';
 import { useCurrency } from '@/hooks/useCurrency';
@@ -20,6 +21,7 @@ import type { TransactionType } from '@/types';
 export function ExpensesPage() {
   const expenses = useExpenseStore((s) => s.expenses);
   const categories = useCategoryStore((s) => s.categories);
+  const paymentSources = usePaymentSourceStore((s) => s.paymentSources);
   const add = useExpenseStore((s) => s.add);
   const update = useExpenseStore((s) => s.update);
   const remove = useExpenseStore((s) => s.remove);
@@ -28,6 +30,7 @@ export function ExpensesPage() {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | TransactionType>('all');
   const [categoryFilter, setCategoryFilter] = useState('');
+  const [paymentSourceFilter, setPaymentSourceFilter] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [amountMin, setAmountMin] = useState('');
@@ -44,15 +47,23 @@ export function ExpensesPage() {
     if (typeFilter === 'expense') list = list.filter(isExpense);
     if (typeFilter === 'income') list = list.filter(isIncome);
     if (categoryFilter) list = list.filter((e) => e.categoryId === categoryFilter);
+    if (paymentSourceFilter) {
+      list = list.filter((e) => e.paymentSourceId === paymentSourceFilter);
+    }
     list = filterByDateRange(list, dateFrom || undefined, dateTo || undefined);
     if (amountMin) list = list.filter((e) => e.amount >= parseFloat(amountMin));
     if (amountMax) list = list.filter((e) => e.amount <= parseFloat(amountMax));
     return list;
-  }, [expenses, search, typeFilter, categoryFilter, dateFrom, dateTo, amountMin, amountMax]);
+  }, [expenses, search, typeFilter, categoryFilter, paymentSourceFilter, dateFrom, dateTo, amountMin, amountMax]);
 
   const catMap = useMemo(
     () => new Map(categories.map((c) => [c.id, c])),
     [categories],
+  );
+
+  const paymentSourceMap = useMemo(
+    () => new Map(paymentSources.map((p) => [p.id, p])),
+    [paymentSources],
   );
 
   return (
@@ -92,6 +103,15 @@ export function ExpensesPage() {
               ...categories.map((c) => ({ value: c.id, label: c.name })),
             ]}
           />
+          <Select
+            label="Card / bank"
+            value={paymentSourceFilter}
+            onChange={(e) => setPaymentSourceFilter(e.target.value)}
+            options={[
+              { value: '', label: 'All accounts' },
+              ...paymentSources.map((p) => ({ value: p.id, label: p.name })),
+            ]}
+          />
           <Input label="From date" type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
           <Input label="To date" type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
           <Input label="Min amount" type="number" value={amountMin} onChange={(e) => setAmountMin(e.target.value)} />
@@ -105,6 +125,7 @@ export function ExpensesPage() {
         <ExpenseTimeline
           expenses={filtered}
           categoryMap={catMap}
+          paymentSourceMap={paymentSourceMap}
           onView={(e) => { setSelected(e); setModal('view'); }}
           onEdit={(e) => { setSelected(e); setModal('edit'); }}
           onDelete={(e) => {
@@ -143,6 +164,7 @@ export function ExpensesPage() {
               ['Type', getTransactionType(selected) === 'income' ? 'Income' : 'Expense'],
               ['Amount', format(selected.amount)],
               ['Category', catMap.get(selected.categoryId)?.name],
+              ['Card / bank', paymentSourceMap.get(selected.paymentSourceId ?? '')?.name ?? '—'],
               ['Description', selected.description || '—'],
               ['Date', formatDisplayDate(selected.date)],
             ].map(([k, v]) => (

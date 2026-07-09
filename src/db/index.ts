@@ -1,5 +1,6 @@
 import Dexie, { type Table } from 'dexie';
 import { deduplicateCategories, seedInitialCategoriesIfEmpty } from '@/db/categories';
+import { seedInitialPaymentSourcesIfEmpty } from '@/db/paymentSources';
 import type {
   AppSettings,
   Budget,
@@ -7,6 +8,7 @@ import type {
   Expense,
   Holding,
   Loan,
+  PaymentSource,
   RecurringExpense,
   SavingsGoal,
 } from '@/types';
@@ -26,6 +28,7 @@ export class ExpenseDatabase extends Dexie {
   recurringExpenses!: Table<RecurringExpense, string>;
   holdings!: Table<Holding, string>;
   loans!: Table<Loan, string>;
+  paymentSources!: Table<PaymentSource, string>;
 
   constructor() {
     super('ExpenseTrackerDB');
@@ -71,6 +74,17 @@ export class ExpenseDatabase extends Dexie {
       recurringExpenses: 'id, isActive, categoryId',
       holdings: 'id, assetType, name, updatedAt',
       loans: 'id, loanType, name, updatedAt',
+    });
+    this.version(6).stores({
+      expenses: 'id, date, categoryId, createdAt, type, paymentSourceId',
+      categories: 'id, name',
+      budgets: 'id, month, categoryId',
+      goals: 'id',
+      settings: 'id',
+      recurringExpenses: 'id, isActive, categoryId',
+      holdings: 'id, assetType, name, updatedAt',
+      loans: 'id, loanType, name, updatedAt',
+      paymentSources: 'id, name, kind',
     });
   }
 }
@@ -124,6 +138,7 @@ export async function seedDatabase(): Promise<void> {
     await migrateHoldingsToTotals();
     await deduplicateCategories();
     await seedInitialCategoriesIfEmpty();
+    await seedInitialPaymentSourcesIfEmpty();
 
     const settings = await db.settings.get('app');
     if (!settings) {

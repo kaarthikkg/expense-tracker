@@ -6,11 +6,14 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:firebase": "tsc -b && vite build --mode firebase",
+    "deploy:firebase": "npm run build:firebase && npx -y firebase-tools@latest deploy",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
     "dexie": "^4.0.11",
+    "firebase": "^12.14.0",
     "framer-motion": "^12.40.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
