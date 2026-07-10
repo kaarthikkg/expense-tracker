@@ -44,9 +44,11 @@ export function AppLayout() {
   const showFab = !fabOpen && location.pathname !== '/settings';
 
   return (
-    <div className="relative flex min-h-dvh">
+    <div className="relative flex min-h-dvh w-full max-w-full overflow-x-clip">
       <FinancialBackground />
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-cockpit-border bg-cockpit-panel/90 shadow-sm backdrop-blur-xl md:flex dark:shadow-none">
+
+      {/* Desktop sidebar */}
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-cockpit-border bg-cockpit-panel/90 shadow-sm backdrop-blur-xl lg:flex dark:shadow-none">
         <div className="border-b border-cockpit-border px-5 py-6">
           <div className="flex items-center gap-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-accent shadow-lg shadow-accent/30">
@@ -84,33 +86,40 @@ export function AppLayout() {
         </nav>
       </aside>
 
-      <main className="relative z-10 flex min-h-dvh flex-1 flex-col md:pl-60">
-        <div className="flex items-center justify-end px-4 pt-3 md:hidden">
+      <main className="relative z-10 flex min-h-dvh min-w-0 w-full flex-1 flex-col lg:pl-60">
+        <header className="page-pad flex items-center justify-between gap-3 pt-[max(0.75rem,env(safe-area-inset-top))] lg:hidden">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-fg">Finance</p>
+            <p className="text-xs text-fg-muted">Command Center</p>
+          </div>
           <DataSourceBadge compact />
-        </div>
-        <div className="flex-1 px-4 py-6 pb-28 md:px-8 md:py-8 md:pb-8">
-          <Outlet />
+        </header>
+
+        <div className="page-pad min-w-0 flex-1 pb-[calc(5.75rem+env(safe-area-inset-bottom,0px))] pt-[var(--page-pad-y)] lg:pb-[var(--page-pad-y)]">
+          <div className="mx-auto w-full min-w-0 max-w-7xl">
+            <Outlet />
+          </div>
         </div>
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-cockpit-border bg-cockpit-panel/90 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-4px_24px_-8px_rgba(15,23,42,0.08)] backdrop-blur-xl md:hidden dark:shadow-none">
-        <div className="mx-auto flex max-w-lg items-end justify-around">
+      {/* Mobile / tablet bottom nav — sidebar only from lg up */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-cockpit-border bg-cockpit-panel/95 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 shadow-[0_-4px_24px_-8px_rgba(15,23,42,0.08)] backdrop-blur-xl lg:hidden dark:shadow-none">
+        <div className="mx-auto flex w-full max-w-lg items-stretch justify-around px-1">
           {mobileNav.map(({ to, label, Icon, end }) => (
             <NavLink
               key={to}
               to={to}
               end={end}
               className={({ isActive }) =>
-                `flex flex-1 flex-col items-center gap-1 py-2 text-[10px] font-medium ${
+                `flex min-h-12 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-[0.7rem] font-semibold leading-tight ${
                   isActive ? 'text-accent' : 'text-fg-muted'
                 }`
               }
             >
-              <Icon className="h-5 w-5" />
-              {label}
+              <Icon className="h-5 w-5 shrink-0" />
+              <span className="truncate">{label}</span>
             </NavLink>
           ))}
-          <div className="w-14" />
         </div>
       </nav>
 
@@ -121,10 +130,10 @@ export function AppLayout() {
           animate={{ scale: 1 }}
           whileTap={{ scale: 0.92 }}
           onClick={() => setFabOpen(true)}
-          className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-4 z-50 flex h-14 w-14 items-center justify-center rounded-2xl gradient-accent shadow-xl shadow-accent/35 md:bottom-8 md:right-8"
+          className="fixed bottom-[calc(4.25rem+env(safe-area-inset-bottom))] right-[max(1rem,env(safe-area-inset-right))] z-50 flex h-14 w-14 items-center justify-center rounded-2xl gradient-accent shadow-xl shadow-accent/35 lg:bottom-8 lg:right-8"
           aria-label="Add transaction"
         >
-          <IconPlus className="h-6 w-6 text-white" />
+          <IconPlus className="h-7 w-7 text-white" />
         </motion.button>
       )}
 

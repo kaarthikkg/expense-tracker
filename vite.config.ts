@@ -12,6 +12,9 @@ export default defineConfig(({ mode }) => ({
       : mode === 'production'
         ? '/expense-tracker/'
         : '/',
+  server: {
+    host: true,
+  },
   plugins: [
     react(),
     tailwindcss(),
@@ -40,6 +43,8 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        // Don't SPA-fallback Firebase Auth reserved URLs (Google sign-in popup/redirect)
+        navigateFallbackDenylist: [/^\/__/],
       },
     }),
   ],

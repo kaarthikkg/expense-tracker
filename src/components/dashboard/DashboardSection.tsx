@@ -21,13 +21,13 @@ export function DashboardSection({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay, ease: [0.22, 1, 0.36, 1] }}
-      className={`glass-panel overflow-hidden rounded-2xl ${className}`}
+      className={`glass-panel w-full min-w-0 overflow-hidden rounded-2xl ${className}`}
     >
-      <div className="border-b border-cockpit-border px-5 py-4">
-        <h2 className="text-sm font-semibold text-fg">{title}</h2>
-        {subtitle && <p className="mt-0.5 text-xs text-fg-muted">{subtitle}</p>}
+      <div className="border-b border-cockpit-border px-4 py-4 sm:px-5">
+        <h2 className="text-base font-semibold text-fg sm:text-sm">{title}</h2>
+        {subtitle && <p className="mt-0.5 text-sm text-fg-muted sm:text-xs">{subtitle}</p>}
       </div>
-      <div className="p-5">{children}</div>
+      <div className="p-4 sm:p-5">{children}</div>
     </motion.section>
   );
 }

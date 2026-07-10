@@ -26,13 +26,13 @@ export function MorePage() {
           >
             <NavLink
               to={item.to}
-              className="glass-panel flex items-center justify-between rounded-2xl px-5 py-4 transition hover-surface"
+              className="glass-panel flex min-h-16 items-center justify-between rounded-2xl px-4 py-4 transition hover-surface sm:px-5"
             >
               <div>
-                <p className="font-medium">{item.label}</p>
-                <p className="text-xs text-fg-muted">{item.desc}</p>
+                <p className="text-base font-medium sm:text-sm">{item.label}</p>
+                <p className="mt-0.5 text-sm text-fg-muted sm:text-xs">{item.desc}</p>
               </div>
-              <span className="text-accent">→</span>
+              <span className="text-lg text-accent">→</span>
             </NavLink>
           </motion.div>
         ))}

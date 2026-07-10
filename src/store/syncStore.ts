@@ -5,6 +5,8 @@ import {
   pullCloudToLocal,
   pushLocalToCloud,
   syncOnSignIn,
+  tableToSyncTarget,
+  type SyncTarget,
 } from '@/services/cloudSync';
 import { useAuthStore } from '@/store/authStore';
 import { useBudgetStore } from '@/store/budgetStore';
@@ -31,14 +33,30 @@ interface SyncState {
   schedulePush: () => void;
   syncNow: () => Promise<void>;
   pullNow: () => Promise<void>;
-  pushNow: () => Promise<void>;
+  pushNow: (opts?: { quiet?: boolean; full?: boolean }) => Promise<void>;
   onSignedIn: (uid: string) => Promise<void>;
   onSignedOut: () => void;
   reloadStores: () => Promise<void>;
 }
 
+/** Longer debounce on mobile-friendly networks — coalesce rapid edits into one push. */
+const PUSH_DEBOUNCE_MS = 2800;
+
 let pushTimer: ReturnType<typeof setTimeout> | null = null;
-const PUSH_DEBOUNCE_MS = 1500;
+let pushInFlight = false;
+let pushQueued = false;
+const dirtyTargets = new Set<SyncTarget>();
+
+function markDirty(target: SyncTarget): void {
+  dirtyTargets.add(target);
+}
+
+function takeDirtyTargets(): SyncTarget[] | undefined {
+  if (dirtyTargets.size === 0) return undefined;
+  const list = [...dirtyTargets];
+  dirtyTargets.clear();
+  return list;
+}
 
 async function reloadAllStores(): Promise<void> {
   await Promise.all([
@@ -77,20 +95,22 @@ export const useSyncStore = create<SyncState>((set, get) => ({
       db.loans,
       db.settings,
     ];
-    const onChange = () => {
+    const onChange = (tableName: string) => {
       if (isApplyingRemoteSync()) return;
+      const target = tableToSyncTarget(tableName);
+      if (target) markDirty(target);
       get().schedulePush();
     };
     for (const table of tables) {
-      // Dexie TableHooks is callable: table.hook(eventName, subscriber)
+      const name = table.name;
       table.hook('creating', () => {
-        onChange();
+        onChange(name);
       });
       table.hook('updating', () => {
-        onChange();
+        onChange(name);
       });
       table.hook('deleting', () => {
-        onChange();
+        onChange(name);
       });
     }
     set({ hooksAttached: true });
@@ -101,7 +121,7 @@ export const useSyncStore = create<SyncState>((set, get) => ({
     if (!uid || !navigator.onLine) return;
     if (pushTimer) clearTimeout(pushTimer);
     pushTimer = setTimeout(() => {
-      void get().pushNow();
+      void get().pushNow({ quiet: true });
     }, PUSH_DEBOUNCE_MS);
   },
 
@@ -117,6 +137,7 @@ export const useSyncStore = create<SyncState>((set, get) => ({
     set({ status: 'syncing', error: null, message: 'Syncing with Firebase…' });
     try {
       const result = await syncOnSignIn(uid);
+      dirtyTargets.clear();
       await reloadAllStores();
       set({
         status: 'idle',
@@ -142,6 +163,8 @@ export const useSyncStore = create<SyncState>((set, get) => ({
       clearTimeout(pushTimer);
       pushTimer = null;
     }
+    dirtyTargets.clear();
+    pushQueued = false;
     set({
       dataSource: 'local',
       status: 'idle',
@@ -151,21 +174,72 @@ export const useSyncStore = create<SyncState>((set, get) => ({
     });
   },
 
-  pushNow: async () => {
+  pushNow: async (opts = {}) => {
     const uid = useAuthStore.getState().user?.uid;
     if (!uid) return;
     if (!navigator.onLine) {
-      set({ status: 'offline', error: 'You are offline' });
+      if (!opts.quiet) set({ status: 'offline', error: 'You are offline' });
       return;
     }
-    set({ status: 'syncing', error: null, message: 'Uploading to Firebase…' });
+
+    // Coalesce: if a push is already running, queue one more after it finishes
+    if (pushInFlight) {
+      pushQueued = true;
+      if (opts.full) {
+        // Force a full sync on the queued run
+        for (const t of [
+          'expenses',
+          'categories',
+          'paymentSources',
+          'budgets',
+          'goals',
+          'recurringExpenses',
+          'holdings',
+          'loans',
+          'settings',
+        ] as SyncTarget[]) {
+          markDirty(t);
+        }
+      }
+      return;
+    }
+
+    pushInFlight = true;
+    const quiet = Boolean(opts.quiet);
+    if (!quiet) {
+      set({ status: 'syncing', error: null, message: 'Uploading to Firebase…' });
+    }
+
     try {
-      await pushLocalToCloud(uid);
+      do {
+        pushQueued = false;
+        const doFull = Boolean(opts.full);
+        // After the first iteration, queued follow-ups are incremental
+        opts = { ...opts, full: false };
+
+        if (doFull) {
+          await pushLocalToCloud(uid);
+          continue;
+        }
+
+        const targets = takeDirtyTargets();
+        if (targets && targets.length > 0) {
+          await pushLocalToCloud(uid, { targets });
+          continue;
+        }
+
+        // Manual upload with nothing marked dirty → full mirror
+        if (!quiet) {
+          await pushLocalToCloud(uid);
+        }
+      } while (pushQueued);
+
       set({
         status: 'idle',
         dataSource: 'firebase',
         lastSyncedAt: new Date().toISOString(),
-        message: 'Uploaded to Firebase',
+        error: null,
+        message: quiet ? null : 'Uploaded to Firebase',
       });
     } catch (error) {
       set({
@@ -173,6 +247,8 @@ export const useSyncStore = create<SyncState>((set, get) => ({
         error: error instanceof Error ? error.message : 'Upload failed',
         message: null,
       });
+    } finally {
+      pushInFlight = false;
     }
   },
 
@@ -193,6 +269,7 @@ export const useSyncStore = create<SyncState>((set, get) => ({
         });
         return;
       }
+      dirtyTargets.clear();
       await reloadAllStores();
       set({
         status: 'idle',
@@ -210,6 +287,6 @@ export const useSyncStore = create<SyncState>((set, get) => ({
   },
 
   syncNow: async () => {
-    await get().pushNow();
+    await get().pushNow({ full: true });
   },
 }));

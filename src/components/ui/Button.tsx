@@ -29,9 +29,9 @@ export function Button({
   ...props
 }: ButtonProps) {
   const sizes = {
-    sm: 'px-3 py-1.5 text-xs rounded-lg',
-    md: 'px-4 py-2.5 text-sm rounded-xl',
-    lg: 'px-6 py-3 text-base rounded-xl',
+    sm: 'min-h-10 px-3.5 py-2 text-sm rounded-xl md:min-h-0 md:px-3 md:py-1.5 md:text-xs md:rounded-lg',
+    md: 'min-h-11 px-4 py-2.5 text-sm rounded-xl md:min-h-0',
+    lg: 'min-h-12 px-6 py-3 text-base rounded-xl md:min-h-0',
   };
 
   return (

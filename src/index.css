@@ -38,6 +38,16 @@
   --finance-glow-a: rgb(91 140 255 / 0.12);
   --finance-glow-b: rgb(13 148 136 / 0.08);
   --finance-scan: rgb(91 140 255 / 0.06);
+
+  /* Fluid layout tokens — scale between phone and desktop */
+  --page-pad-x: clamp(0.75rem, 2.5vw, 2rem);
+  --page-pad-y: clamp(0.75rem, 2vw, 2rem);
+  --page-gap: clamp(0.875rem, 2vw, 1.5rem);
+  --title-size: clamp(1.5rem, 1.1rem + 1.6vw, 1.875rem);
+  --metric-size: clamp(1.625rem, 1.2rem + 1.8vw, 2.25rem);
+  --metric-lg-size: clamp(1.875rem, 1.3rem + 2.4vw, 2.75rem);
+  --label-size: clamp(0.6875rem, 0.65rem + 0.2vw, 0.75rem);
+  --body-size: clamp(0.9375rem, 0.9rem + 0.2vw, 1rem);
 }
 
 html.dark {
@@ -108,10 +118,18 @@ html.dark {
 @layer base {
   html {
     @apply antialiased;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    width: 100%;
+    overflow-x: clip;
   }
 
   body {
     @apply min-h-dvh font-sans text-fg;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+    font-size: var(--body-size);
     background-color: var(--cockpit-bg);
     background-image:
       radial-gradient(ellipse 80% 50% at 50% -20%, var(--body-gradient-1), transparent),
@@ -119,7 +137,7 @@ html.dark {
   }
 
   #root {
-    @apply min-h-dvh;
+    @apply min-h-dvh w-full max-w-full overflow-x-clip;
   }
 
   ::selection {
@@ -211,6 +229,52 @@ html.dark {
       var(--finance-scan) 50%,
       transparent 100%
     );
+  }
+
+  /* Section / metric eyebrow — fluid between phone and desktop */
+  .type-label {
+    font-size: var(--label-size);
+    @apply font-medium uppercase tracking-wider text-fg-muted;
+  }
+
+  .type-label-accent {
+    font-size: var(--label-size);
+    @apply font-medium uppercase tracking-wider text-accent;
+  }
+
+  .type-title {
+    font-size: var(--title-size);
+    @apply font-semibold tracking-tight text-fg;
+  }
+
+  .type-metric {
+    font-size: var(--metric-size);
+    @apply font-mono font-semibold tracking-tight;
+  }
+
+  .type-metric-lg {
+    font-size: var(--metric-lg-size);
+    @apply font-mono font-bold tracking-tight;
+  }
+
+  .page-pad {
+    padding-left: var(--page-pad-x);
+    padding-right: var(--page-pad-x);
+  }
+
+  .page-stack {
+    gap: var(--page-gap);
+  }
+
+  /* Comfortable tap targets on touch devices */
+  .touch-target {
+    @apply min-h-11 min-w-11;
+  }
+
+  /* Long currency strings stay inside the card */
+  .amount-fit {
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   /* Mood tints driven by this month's cash flow / budget */

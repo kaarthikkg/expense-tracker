@@ -23,18 +23,22 @@ export function Card({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-      className={`glass-panel overflow-hidden rounded-2xl ${className}`}
+      className={`glass-panel w-full min-w-0 overflow-hidden rounded-2xl ${className}`}
     >
       {(title || action) && (
-        <div className="flex items-start justify-between gap-3 border-b border-cockpit-border px-5 py-4">
+        <div className="flex items-start justify-between gap-3 border-b border-cockpit-border px-4 py-4 sm:px-5">
           <div>
-            {title && <h2 className="text-sm font-semibold tracking-tight text-fg">{title}</h2>}
-            {subtitle && <p className="mt-0.5 text-xs text-fg-muted">{subtitle}</p>}
+            {title && (
+              <h2 className="text-base font-semibold tracking-tight text-fg sm:text-sm">{title}</h2>
+            )}
+            {subtitle && (
+              <p className="mt-0.5 text-sm text-fg-muted sm:text-xs">{subtitle}</p>
+            )}
           </div>
           {action}
         </div>
       )}
-      <div className={noPadding ? '' : 'p-5'}>{children}</div>
+      <div className={noPadding ? '' : 'p-4 sm:p-5'}>{children}</div>
     </motion.section>
   );
 }

@@ -100,7 +100,8 @@ export function FinancialBackground() {
         />
       </svg>
 
-      <div className="absolute inset-x-[6%] bottom-[12%] flex h-[28%] items-end justify-between gap-1 opacity-[0.28] dark:opacity-[0.34] md:inset-x-[10%]">
+      {/* Candles — desktop only (keeps phone layout clean) */}
+      <div className="absolute inset-x-[6%] bottom-[12%] hidden h-[28%] items-end justify-between gap-1 opacity-[0.28] md:flex dark:opacity-[0.34] lg:inset-x-[10%]">
         {candles.map((c, i) => (
           <motion.div
             key={`${i}-${c.h}-${c.up}`}
@@ -141,10 +142,11 @@ export function FinancialBackground() {
         ))}
       </div>
 
+      {/* Tickers — desktop only; absolute labels can widen the page on phones */}
       {tickers.map((t) => (
         <motion.span
           key={t.label}
-          className="finance-bg-ticker absolute font-mono text-[10px] font-medium tracking-[0.14em] uppercase md:text-[11px]"
+          className="finance-bg-ticker absolute hidden max-w-[40vw] truncate font-mono text-[11px] font-medium uppercase tracking-[0.14em] md:block"
           style={{ left: t.x, top: t.y }}
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: [0.2, 0.55, 0.25], y: [0, -8, 0] }}
@@ -162,7 +164,7 @@ export function FinancialBackground() {
       {FLOAT_DOTS.map((d, i) => (
         <motion.span
           key={i}
-          className="absolute rounded-full"
+          className="absolute hidden rounded-full md:block"
           style={{
             left: d.x,
             top: d.y,
@@ -185,7 +187,7 @@ export function FinancialBackground() {
       ))}
 
       <motion.div
-        className="finance-bg-scan absolute inset-x-0 h-24"
+        className="finance-bg-scan absolute inset-x-0 hidden h-24 md:block"
         animate={{ top: ['-10%', '110%'] }}
         transition={{ duration: 14, repeat: Infinity, ease: 'linear' }}
       />

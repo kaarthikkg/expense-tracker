@@ -78,7 +78,7 @@ export function CloudSyncCard() {
             )}
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button disabled={syncing} onClick={() => void run(pushNow)}>
+            <Button disabled={syncing} onClick={() => void run(() => pushNow({ full: true }))}>
               Upload to Firebase
             </Button>
             <Button variant="secondary" disabled={syncing} onClick={() => void run(pullNow)}>
@@ -93,9 +93,9 @@ export function CloudSyncCard() {
             </Button>
           </div>
           <p className="text-xs text-fg-muted">
-            Local edits auto-upload a few seconds after you change data (while signed in and online).
-            Check Firestore under <code className="text-fg">{'users/<your-uid>'}</code> in the
-            Firebase Console.
+            Local edits auto-upload in the background (~3s after you stop changing data). Only
+            changed tables are uploaded. Check Firestore under{' '}
+            <code className="text-fg">{'users/<your-uid>'}</code> in the Firebase Console.
           </p>
         </div>
       ) : (
@@ -159,7 +159,7 @@ export function CloudSyncCard() {
           <p className="text-xs text-fg-muted">
             Enable Email/Password and Google in Firebase Console → Authentication → Sign-in method.
             Add <code className="text-fg">localhost</code> and your hosting domain under Authorized
-            domains.
+            domains. On mobile, Google sign-in uses a full-page redirect.
           </p>
         </div>
       )}

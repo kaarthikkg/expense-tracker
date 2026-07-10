@@ -12,7 +12,7 @@ export function Input({ label, error, className = '', id, ...props }: InputProps
       {label && <span className="font-medium text-fg-secondary">{label}</span>}
       <input
         id={inputId}
-        className={`rounded-xl border border-cockpit-border-strong bg-cockpit-panel px-3.5 py-2.5 text-fg shadow-sm outline-none transition placeholder:text-fg-muted focus:border-accent/50 focus:ring-2 focus:ring-accent/25 dark:bg-cockpit-elevated/80 dark:shadow-none ${className}`}
+        className={`rounded-xl border border-cockpit-border-strong bg-cockpit-panel px-3.5 py-3 text-base text-fg shadow-sm outline-none transition placeholder:text-fg-muted focus:border-accent/50 focus:ring-2 focus:ring-accent/25 sm:py-2.5 sm:text-sm dark:bg-cockpit-elevated/80 dark:shadow-none ${className}`}
         {...props}
       />
       {error && <span className="text-xs text-danger">{error}</span>}

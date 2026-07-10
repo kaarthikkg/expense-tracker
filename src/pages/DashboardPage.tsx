@@ -40,13 +40,11 @@ function SummaryStat({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay }}
-      className="glass-panel rounded-2xl p-5"
+      className="glass-panel w-full min-w-0 rounded-2xl p-4 sm:p-5"
     >
-      <p className="text-[11px] font-medium uppercase tracking-widest text-fg-muted">{label}</p>
-      <div className="mt-2 font-mono text-2xl font-semibold tracking-tight sm:text-3xl">
-        {children}
-      </div>
-      {sub && <p className="mt-1.5 text-xs text-fg-secondary">{sub}</p>}
+      <p className="type-label">{label}</p>
+      <div className="type-metric amount-fit mt-2">{children}</div>
+      {sub && <p className="mt-1.5 text-sm text-fg-secondary">{sub}</p>}
     </motion.div>
   );
 }
@@ -74,9 +72,11 @@ export function DashboardPage() {
       title="Dashboard"
       subtitle={`${m.monthLabel} · cashflow & wealth`}
       action={
-        <Button onClick={() => setAddOpen(true)} size="sm">
-          + Log transaction
-        </Button>
+        <div className="hidden sm:block">
+          <Button onClick={() => setAddOpen(true)} size="sm">
+            + Log transaction
+          </Button>
+        </div>
       }
     >
       <NetWorthPanel data={netWorth} />
@@ -85,15 +85,13 @@ export function DashboardPage() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="glass-panel flex flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-3"
+        className="glass-panel flex w-full min-w-0 flex-col gap-3 rounded-2xl px-4 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3 sm:py-3"
       >
         <div className="min-w-0">
-          <p className="text-[11px] font-medium uppercase tracking-widest text-fg-muted">
-            Monthly insights
-          </p>
-          <p className="mt-0.5 text-sm font-semibold text-fg">{m.monthLabel}</p>
+          <p className="type-label">Monthly insights</p>
+          <p className="mt-0.5 text-base font-semibold text-fg">{m.monthLabel}</p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:flex sm:flex-wrap">
           <Button
             variant="secondary"
             size="sm"
@@ -111,7 +109,7 @@ export function DashboardPage() {
               const next = e.target.value;
               if (next && next <= currentMonthKey) setSelectedMonth(next);
             }}
-            className="rounded-lg border border-cockpit-border-strong bg-cockpit-panel px-3 py-1.5 text-sm text-fg outline-none transition focus:border-accent/50 focus:ring-2 focus:ring-accent/25 dark:bg-cockpit-elevated/80"
+            className="min-h-10 w-full min-w-0 rounded-xl border border-cockpit-border-strong bg-cockpit-panel px-3 py-2 text-sm text-fg outline-none transition focus:border-accent/50 focus:ring-2 focus:ring-accent/25 sm:w-auto dark:bg-cockpit-elevated/80"
           />
           <Button
             variant="secondary"
@@ -128,28 +126,33 @@ export function DashboardPage() {
             Next →
           </Button>
           {!isCurrentMonth && (
-            <Button variant="ghost" size="sm" onClick={() => setSelectedMonth(currentMonthKey)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="col-span-3 sm:col-span-1"
+              onClick={() => setSelectedMonth(currentMonthKey)}
+            >
               This month
             </Button>
           )}
         </div>
       </motion.div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
         <SummaryStat label="Spent" sub={`${periodLabel} · expenses only`} delay={0.05}>
           <span className="metric-glow text-fg">
             <AnimatedMetric value={m.monthTotal} />
           </span>
           {m.budgetRemaining !== null && (
             <div className="mt-4 border-t border-cockpit-border pt-4">
-              <div className="mb-1 flex justify-between text-[11px] text-fg-muted">
+              <div className="mb-1 flex justify-between text-xs text-fg-muted">
                 <span>Budget</span>
                 <span>
                   {format(m.monthTotal)} / {format(m.monthTotal + m.budgetRemaining)}
                 </span>
               </div>
               <ProgressBar value={m.monthTotal} max={m.monthTotal + m.budgetRemaining} />
-              <p className="mt-1.5 text-[11px] text-fg-muted">
+              <p className="mt-1.5 text-xs text-fg-muted">
                 {m.budgetRemaining >= 0
                   ? `${format(m.budgetRemaining)} remaining`
                   : `${format(-m.budgetRemaining)} over budget`}
@@ -184,7 +187,7 @@ export function DashboardPage() {
         </SummaryStat>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid w-full min-w-0 gap-4 lg:grid-cols-2 lg:gap-6">
         <DashboardSection
           title="Spending by category"
           subtitle={`Share of ${isCurrentMonth ? "this month's" : `${m.monthLabel}'s`} expenses`}
@@ -210,7 +213,7 @@ export function DashboardPage() {
         </DashboardSection>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-5">
+      <div className="grid w-full min-w-0 gap-4 lg:grid-cols-5 lg:gap-6">
         <DashboardSection
           title="Insights"
           subtitle={
@@ -228,16 +231,19 @@ export function DashboardPage() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
-          className="glass-panel flex flex-col rounded-2xl lg:col-span-3"
+          className="glass-panel flex w-full min-w-0 flex-col rounded-2xl lg:col-span-3"
         >
-          <div className="flex items-center justify-between border-b border-cockpit-border px-5 py-4">
+          <div className="flex items-center justify-between border-b border-cockpit-border px-4 py-4 sm:px-5">
             <div>
-              <h2 className="text-sm font-semibold text-fg">Recent transactions</h2>
-              <p className="mt-0.5 text-xs text-fg-muted">
+              <h2 className="text-base font-semibold text-fg sm:text-sm">Recent transactions</h2>
+              <p className="mt-0.5 text-sm text-fg-muted sm:text-xs">
                 {recent.length} transaction{recent.length === 1 ? '' : 's'}, newest first
               </p>
             </div>
-            <Link to="/expenses" className="text-xs font-medium text-accent hover:underline">
+            <Link
+              to="/expenses"
+              className="inline-flex min-h-10 items-center text-sm font-semibold text-accent"
+            >
               View all →
             </Link>
           </div>
@@ -257,20 +263,20 @@ export function DashboardPage() {
                 return (
                   <div
                     key={e.id}
-                    className="flex items-center gap-4 rounded-xl px-3 py-3 transition hover-surface"
+                    className="flex items-center gap-3 rounded-xl px-3 py-3.5 transition hover-surface sm:gap-4 sm:py-3"
                   >
                     <MerchantAvatar category={cat} description={e.description} size="sm" />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">
+                      <p className="truncate text-base font-medium sm:text-sm">
                         {e.description || 'Transaction'}
                       </p>
-                      <p className="text-xs text-fg-muted">
+                      <p className="mt-0.5 text-sm text-fg-muted sm:text-xs">
                         {income ? 'Income' : 'Expense'} · {cat?.name}
                         {account ? ` · ${account.name}` : ''} · {formatDisplayDate(e.date)}
                       </p>
                     </div>
                     <span
-                      className={`font-mono text-sm font-semibold ${income ? 'text-success' : ''}`}
+                      className={`shrink-0 font-mono text-base font-semibold sm:text-sm ${income ? 'text-success' : ''}`}
                     >
                       {income ? '+' : ''}
                       {format(e.amount)}

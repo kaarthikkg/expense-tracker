@@ -7,15 +7,17 @@ export function DataSourceBadge({ compact = false }: { compact?: boolean }) {
   const user = useAuthStore((s) => s.user);
   const configured = useAuthStore((s) => s.configured);
 
+  const shell = `inline-flex items-center gap-1.5 rounded-lg border border-cockpit-border bg-cockpit-elevated/60 font-mono text-xs uppercase tracking-wider ${
+    compact ? 'px-2 py-1' : 'px-2.5 py-1.5'
+  }`;
+
   if (!configured) {
     return (
       <span
-        className={`inline-flex items-center gap-1.5 rounded-md border border-cockpit-border bg-cockpit-elevated/60 font-mono text-[10px] uppercase tracking-wider text-fg-muted ${
-          compact ? 'px-1.5 py-0.5' : 'px-2 py-1'
-        }`}
+        className={`${shell} text-fg-muted`}
         title="Add Firebase env vars to enable cloud sync"
       >
-        <span className="h-1.5 w-1.5 rounded-full bg-fg-muted" />
+        <span className="h-2 w-2 rounded-full bg-fg-muted" />
         Local
       </span>
     );
@@ -44,16 +46,14 @@ export function DataSourceBadge({ compact = false }: { compact?: boolean }) {
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-md border border-cockpit-border bg-cockpit-elevated/60 font-mono text-[10px] uppercase tracking-wider text-fg-secondary ${
-        compact ? 'px-1.5 py-0.5' : 'px-2 py-1'
-      }`}
+      className={`${shell} text-fg-secondary`}
       title={
         user
           ? `Signed in as ${user.email ?? user.uid} · source: ${dataSource}`
           : 'Not signed in · local IndexedDB only'
       }
     >
-      <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />
+      <span className={`h-2 w-2 rounded-full ${dot}`} />
       {label}
     </span>
   );

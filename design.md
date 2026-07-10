@@ -206,3 +206,81 @@ User chose: driven by real spending data (from options stronger / quieter / data
 - Floating tickers show live SPENT / IN / NET / TOP category / BURN%
 - Mood tint: surplus (green), deficit (amber), overBudget (red), balanced (blue), empty (muted)
 - Updates automatically when transactions or budgets change
+
+### Prompt — Firebase sync slow on mobile (2026-07-10)
+
+Firebase sync seems slow on mobile — is there room for improvements?
+
+### Agent response — Faster Firebase sync (2026-07-10)
+
+**Verdict:** Yes. Sync was doing a full mirror of all 8 collections on every edit, with sequential Firestore reads — very costly on mobile.
+
+**Changes**
+- **Incremental auto-push:** Dexie hooks mark dirty tables; background upload only syncs those collections (not everything)
+- **Diff-only writes:** skip unchanged docs; only set/delete what actually changed
+- **Parallel I/O:** collection `getDocs` / local reads via `Promise.all`; batch commits in waves of 3
+- **Pull:** one parallel fetch for meta + settings + all collections (no double expense read)
+- **Quiet background sync:** auto-upload no longer flips UI to “Syncing…”; debounce ~2.8s; in-flight pushes coalesce
+- **Firestore persistent cache** (`persistentLocalCache`) for faster repeat reads on mobile
+- Manual **Upload** still does a full sync when you ask for it
+
+### Prompt — Firebase deploy MODULE_NOT_FOUND (2026-07-10)
+
+`npm run deploy:firebase` failed after a successful build with `Cannot find module '../../package.json'` from `npx` firebase-tools under `C:\temp\npm-cache\_npx\…`.
+
+### Agent response — Fix Firebase deploy CLI (2026-07-10)
+
+**Verdict:** Build was fine; `npx -y firebase-tools@latest` used a corrupted/incomplete cache install.
+
+**Fix**
+- Added `firebase-tools` as a local `devDependency`
+- Changed `deploy:firebase` to `npm run build:firebase && firebase deploy` (uses local CLI)
+- Cleared the broken npx cache entry when present
+- Re-run: `npm run deploy:firebase`
+
+### Prompt — Google sign-in popup loads app URL (2026-07-10)
+
+On click of Continue with Google, sign-in is not loading — app URL only loads in the popup.
+
+### Agent response — Fix Google sign-in popup (2026-07-10)
+
+**Cause:** PWA service worker was intercepting Firebase’s `/__/auth/handler` and serving the SPA inside the popup.
+
+**Fix**
+- `vite.config.ts` workbox: `navigateFallbackDenylist: [/^\/__/]` so Auth reserved URLs bypass the SW
+- Google sign-in: use `signInWithRedirect` on mobile/PWA; popup on desktop; fall back to redirect if popup blocked
+- `getRedirectResult` on auth init to finish redirect sign-in
+- Redeploy required so the new service worker ships: `npm run deploy:firebase`
+
+### Prompt — Mobile UI too small (2026-07-10)
+
+Mobile UI is not looking good — everything is small by default.
+
+### Agent response — Mobile type & touch scale-up (2026-07-10)
+
+**Cause:** Desktop-dense UI (10–11px labels, tiny nav/buttons) on phone viewports.
+
+**Fix**
+- Root `font-size: 17px` under 768px so rem-based Tailwind scales up
+- Shared `.type-label` / larger PageShell titles, Card/DashboardSection headers
+- Bottom nav: larger icons + `text-xs` + taller tap area; FAB clearance increased
+- Buttons: mobile min-heights (`sm`/`md`/`lg`); inputs use `text-base` on mobile (avoids iOS zoom)
+- Dashboard: bigger metrics/net worth, month picker layout, hide header “Log” (FAB covers it)
+- More page links: taller rows, larger type
+- DataSourceBadge: `text-xs` instead of 10px
+
+### Prompt — Mobile still not fitting; dynamic for phone + PC (2026-07-10)
+
+Still not fitting into mobile browser — make it dynamic for both mobile and PC browsers.
+
+### Agent response — Fluid responsive shell (2026-07-10)
+
+**Cause:** Layout wasn’t truly fluid — decorative tickers/absolute labels + no overflow lock could shrink the page on phones; desktop sidebar breakpoint was too early for tablets.
+
+**Fix**
+- Viewport lock: `overflow-x: clip` on html/body/#root; fluid CSS tokens (`clamp`) for padding, titles, metrics
+- App shell: full-width `min-w-0` content; bottom nav until `lg`, sidebar only on large screens; safe-area padding
+- Mobile header with brand + sync badge; quieter background (hide tickers/candles/dots on small screens)
+- Dashboard/NetWorth/Cards: `w-full min-w-0`, fluid `.type-metric` / `.amount-fit` for long ₹ amounts
+- Vite `server.host: true` so phones can open the LAN URL while developing
+- Hard-refresh after pull; on phone use the Network URL from `npm run dev`, not a desktop-zoomed tab
