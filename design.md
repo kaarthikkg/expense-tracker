@@ -6,6 +6,7 @@ Build a modern frontend-only Expense Tracker from `Expense_Tracker_Coding_Agent_
 
 **Firebase:** Hosting + Firestore + Auth; Dexie remains the local cache with optional cloud sync when signed in.
 
+Latest prompt: add some financial background in this application dynamic.
 Latest prompt: fix Vite build chunk size warning (>500 kB).
 Latest prompt: add option to see monthly insights in dashboard for previous months (not only current month).
 Latest prompt: add an option to select which card/bank was used for both expenses and income transactions.
@@ -183,3 +184,25 @@ Add option to see monthly insights on the dashboard; currently only current mont
 ### Agent response — Chunk size warning (2026-07-09)
 
 **Verdict:** Harmless Rollup notice — one JS chunk exceeded 500 kB. Fixed via `manualChunks` in `vite.config.ts` (firebase, charts, xlsx, motion, dexie, react-vendor). Build no longer warns; largest chunks are now under the limit (firebase ~468 kB, charts ~421 kB).
+
+### Prompt — Dynamic financial background (2026-07-09)
+
+Add some financial background in this application that is dynamic.
+
+### Agent response — Dynamic financial background (2026-07-09)
+
+- Added `FinancialBackground` (fixed, non-interactive layer behind all pages): animated market chart lines, soft candlestick silhouettes, floating ticker labels (NIFTY / SENSEX / USD-INR / GOLD / CPI), drifting accent glows, grid, and a light scan sweep
+- Wired into `AppLayout`; content stays above via `z-10`; sidebar/nav slightly more translucent so the backdrop shows through
+- Theme tokens in `index.css` for light/dark; CSS drift animations + `prefers-reduced-motion` guard for glow/scan
+
+### Prompt — Drive background from real spending (2026-07-09)
+
+User chose: driven by real spending data (from options stronger / quieter / data-driven).
+
+### Agent response — Data-driven financial background (2026-07-09)
+
+- `useFinanceBackgroundData` reads expenses, categories, budgets for the current month
+- Chart paths = daily spend (solid) + daily income (dashed); candles from daily spend deltas
+- Floating tickers show live SPENT / IN / NET / TOP category / BURN%
+- Mood tint: surplus (green), deficit (amber), overBudget (red), balanced (blue), empty (muted)
+- Updates automatically when transactions or budgets change

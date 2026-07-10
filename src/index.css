@@ -28,6 +28,16 @@
   --body-gradient-2: rgb(124 58 237 / 0.05);
   --selection-bg: rgb(91 140 255 / 0.25);
   --ring-offset: #ffffff;
+  --finance-line-a: #5b8cff;
+  --finance-line-b: #0d9488;
+  --finance-candle-up: rgb(22 163 74 / 0.55);
+  --finance-candle-down: rgb(220 38 38 / 0.45);
+  --finance-dot: rgb(91 140 255 / 0.55);
+  --finance-ticker: rgb(71 85 105 / 0.55);
+  --finance-grid: rgb(15 23 42 / 0.045);
+  --finance-glow-a: rgb(91 140 255 / 0.12);
+  --finance-glow-b: rgb(13 148 136 / 0.08);
+  --finance-scan: rgb(91 140 255 / 0.06);
 }
 
 html.dark {
@@ -55,6 +65,16 @@ html.dark {
   --body-gradient-2: rgb(91 140 255 / 0.06);
   --selection-bg: rgb(91 140 255 / 0.35);
   --ring-offset: #111827;
+  --finance-line-a: #5b8cff;
+  --finance-line-b: #2dd4bf;
+  --finance-candle-up: rgb(34 197 94 / 0.5);
+  --finance-candle-down: rgb(248 113 113 / 0.4);
+  --finance-dot: rgb(91 140 255 / 0.65);
+  --finance-ticker: rgb(148 163 184 / 0.35);
+  --finance-grid: rgb(255 255 255 / 0.035);
+  --finance-glow-a: rgb(91 140 255 / 0.16);
+  --finance-glow-b: rgb(45 212 191 / 0.08);
+  --finance-scan: rgb(91 140 255 / 0.07);
 }
 
 @theme {
@@ -156,5 +176,133 @@ html.dark {
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background: var(--cockpit-border-strong);
     border-radius: 3px;
+  }
+
+  .finance-bg-grid {
+    background-image:
+      linear-gradient(var(--finance-grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--finance-grid) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse 75% 65% at 50% 45%, black 20%, transparent 75%);
+  }
+
+  .finance-bg-glow {
+    filter: blur(80px);
+  }
+
+  .finance-bg-glow-a {
+    background: var(--finance-glow-a);
+    animation: finance-drift-a 22s ease-in-out infinite alternate;
+  }
+
+  .finance-bg-glow-b {
+    background: var(--finance-glow-b);
+    animation: finance-drift-b 28s ease-in-out infinite alternate;
+  }
+
+  .finance-bg-ticker {
+    color: var(--finance-ticker);
+  }
+
+  .finance-bg-scan {
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      var(--finance-scan) 50%,
+      transparent 100%
+    );
+  }
+
+  /* Mood tints driven by this month's cash flow / budget */
+  .finance-bg--surplus {
+    --finance-line-a: #16a34a;
+    --finance-line-b: #5b8cff;
+    --finance-glow-a: rgb(22 163 74 / 0.14);
+    --finance-glow-b: rgb(91 140 255 / 0.1);
+    --finance-dot: rgb(22 163 74 / 0.55);
+    --finance-scan: rgb(22 163 74 / 0.06);
+  }
+
+  .finance-bg--balanced {
+    --finance-line-a: #5b8cff;
+    --finance-line-b: #0d9488;
+  }
+
+  .finance-bg--deficit {
+    --finance-line-a: #d97706;
+    --finance-line-b: #5b8cff;
+    --finance-glow-a: rgb(217 119 6 / 0.14);
+    --finance-glow-b: rgb(91 140 255 / 0.08);
+    --finance-dot: rgb(217 119 6 / 0.5);
+    --finance-scan: rgb(217 119 6 / 0.06);
+  }
+
+  .finance-bg--overBudget {
+    --finance-line-a: #dc2626;
+    --finance-line-b: #d97706;
+    --finance-glow-a: rgb(220 38 38 / 0.14);
+    --finance-glow-b: rgb(217 119 6 / 0.08);
+    --finance-dot: rgb(220 38 38 / 0.5);
+    --finance-scan: rgb(220 38 38 / 0.07);
+  }
+
+  .finance-bg--empty {
+    --finance-line-a: #5b8cff;
+    --finance-line-b: #64748b;
+    --finance-glow-a: rgb(91 140 255 / 0.08);
+    --finance-glow-b: rgb(100 116 139 / 0.06);
+  }
+}
+
+html.dark .finance-bg--surplus {
+  --finance-line-a: #22c55e;
+  --finance-line-b: #5b8cff;
+  --finance-glow-a: rgb(34 197 94 / 0.16);
+  --finance-glow-b: rgb(91 140 255 / 0.1);
+  --finance-dot: rgb(34 197 94 / 0.6);
+  --finance-scan: rgb(34 197 94 / 0.07);
+}
+
+html.dark .finance-bg--deficit {
+  --finance-line-a: #f59e0b;
+  --finance-line-b: #5b8cff;
+  --finance-glow-a: rgb(245 158 11 / 0.14);
+  --finance-glow-b: rgb(91 140 255 / 0.08);
+  --finance-dot: rgb(245 158 11 / 0.55);
+  --finance-scan: rgb(245 158 11 / 0.06);
+}
+
+html.dark .finance-bg--overBudget {
+  --finance-line-a: #f87171;
+  --finance-line-b: #f59e0b;
+  --finance-glow-a: rgb(248 113 113 / 0.16);
+  --finance-glow-b: rgb(245 158 11 / 0.08);
+  --finance-dot: rgb(248 113 113 / 0.55);
+  --finance-scan: rgb(248 113 113 / 0.08);
+}
+
+@keyframes finance-drift-a {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(8%, 6%) scale(1.08);
+  }
+}
+
+@keyframes finance-drift-b {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(-6%, -8%) scale(1.1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .finance-bg-glow-a,
+  .finance-bg-glow-b,
+  .finance-bg-scan {
+    animation: none !important;
   }
 }

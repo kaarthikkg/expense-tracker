@@ -5,6 +5,7 @@ import { Modal } from '@/components/ui/Modal';
 import { ExpenseForm } from '@/components/expenses/ExpenseForm';
 import { DataSourceBadge } from '@/components/sync/DataSourceBadge';
 import { useExpenseStore } from '@/store/expenseStore';
+import { FinancialBackground } from './FinancialBackground';
 import {
   IconBudget,
   IconDashboard,
@@ -43,8 +44,9 @@ export function AppLayout() {
   const showFab = !fabOpen && location.pathname !== '/settings';
 
   return (
-    <div className="flex min-h-dvh">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-cockpit-border bg-cockpit-panel/95 shadow-sm backdrop-blur-xl md:flex dark:shadow-none">
+    <div className="relative flex min-h-dvh">
+      <FinancialBackground />
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-cockpit-border bg-cockpit-panel/90 shadow-sm backdrop-blur-xl md:flex dark:shadow-none">
         <div className="border-b border-cockpit-border px-5 py-6">
           <div className="flex items-center gap-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-accent shadow-lg shadow-accent/30">
@@ -82,7 +84,7 @@ export function AppLayout() {
         </nav>
       </aside>
 
-      <main className="flex min-h-dvh flex-1 flex-col md:pl-60">
+      <main className="relative z-10 flex min-h-dvh flex-1 flex-col md:pl-60">
         <div className="flex items-center justify-end px-4 pt-3 md:hidden">
           <DataSourceBadge compact />
         </div>
@@ -91,7 +93,7 @@ export function AppLayout() {
         </div>
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-cockpit-border bg-cockpit-panel/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-4px_24px_-8px_rgba(15,23,42,0.08)] backdrop-blur-xl md:hidden dark:shadow-none">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-cockpit-border bg-cockpit-panel/90 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_-4px_24px_-8px_rgba(15,23,42,0.08)] backdrop-blur-xl md:hidden dark:shadow-none">
         <div className="mx-auto flex max-w-lg items-end justify-around">
           {mobileNav.map(({ to, label, Icon, end }) => (
             <NavLink
