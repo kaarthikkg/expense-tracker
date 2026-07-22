@@ -10,7 +10,7 @@ import {
 import { db as dexie } from '@/db';
 import { getFirebaseDb, isFirebaseConfigured } from '@/lib/firebase';
 import { importBackup } from '@/services/importExport';
-import type { ExportData } from '@/types';
+import type { EvConfig, ExportData } from '@/types';
 
 export const SYNC_COLLECTIONS = [
   'expenses',
@@ -21,6 +21,8 @@ export const SYNC_COLLECTIONS = [
   'recurringExpenses',
   'holdings',
   'loans',
+  'evReadings',
+  'evConfig',
 ] as const;
 
 export type SyncCollection = (typeof SYNC_COLLECTIONS)[number];
@@ -207,7 +209,7 @@ export async function pushLocalToCloud(
   ops.push((batch) =>
     batch.set(metaRef(firestore, uid), {
       updatedAt: new Date().toISOString(),
-      version: 4,
+      version: 5,
       exportedAt: new Date().toISOString(),
     }),
   );
@@ -240,7 +242,7 @@ export async function pullCloudToLocal(uid: string): Promise<boolean> {
     snap.docs.map((d) => ({ id: d.id, ...d.data() }) as T);
 
   const exportData: ExportData = {
-    version: (meta.data()?.version as number) ?? 4,
+    version: (meta.data()?.version as number) ?? 5,
     exportedAt: (meta.data()?.exportedAt as string) ?? new Date().toISOString(),
     expenses: asRows(collectionSnaps[0]),
     categories: asRows(collectionSnaps[1]),
@@ -250,6 +252,8 @@ export async function pullCloudToLocal(uid: string): Promise<boolean> {
     recurringExpenses: asRows(collectionSnaps[5]),
     holdings: asRows(collectionSnaps[6]),
     loans: asRows(collectionSnaps[7]),
+    evReadings: asRows(collectionSnaps[8]),
+    evConfig: asRows<EvConfig>(collectionSnaps[9])[0],
     settings: { ...settings, id: 'app' },
   };
 
@@ -274,14 +278,15 @@ export async function syncOnSignIn(uid: string): Promise<'pulled' | 'pushed'> {
 }
 
 export async function localRecordCount(): Promise<number> {
-  const [expenses, categories, goals, holdings, loans] = await Promise.all([
+  const [expenses, categories, goals, holdings, loans, evReadings] = await Promise.all([
     dexie.expenses.count(),
     dexie.categories.count(),
     dexie.goals.count(),
     dexie.holdings.count(),
     dexie.loans.count(),
+    dexie.evReadings.count(),
   ]);
-  return expenses + categories + goals + holdings + loans;
+  return expenses + categories + goals + holdings + loans + evReadings;
 }
 
 /** Map Dexie table name → sync target. */

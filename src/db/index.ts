@@ -5,6 +5,8 @@ import type {
   AppSettings,
   Budget,
   Category,
+  EvConfig,
+  EvOdometerReading,
   Expense,
   Holding,
   Loan,
@@ -12,6 +14,7 @@ import type {
   RecurringExpense,
   SavingsGoal,
 } from '@/types';
+import { DEFAULT_EV_CONFIG } from '@/utils/ev';
 
 const DEFAULT_SETTINGS: AppSettings = {
   id: 'app',
@@ -29,6 +32,8 @@ export class ExpenseDatabase extends Dexie {
   holdings!: Table<Holding, string>;
   loans!: Table<Loan, string>;
   paymentSources!: Table<PaymentSource, string>;
+  evReadings!: Table<EvOdometerReading, string>;
+  evConfig!: Table<EvConfig, string>;
 
   constructor() {
     super('ExpenseTrackerDB');
@@ -85,6 +90,19 @@ export class ExpenseDatabase extends Dexie {
       holdings: 'id, assetType, name, updatedAt',
       loans: 'id, loanType, name, updatedAt',
       paymentSources: 'id, name, kind',
+    });
+    this.version(7).stores({
+      expenses: 'id, date, categoryId, createdAt, type, paymentSourceId',
+      categories: 'id, name',
+      budgets: 'id, month, categoryId',
+      goals: 'id',
+      settings: 'id',
+      recurringExpenses: 'id, isActive, categoryId',
+      holdings: 'id, assetType, name, updatedAt',
+      loans: 'id, loanType, name, updatedAt',
+      paymentSources: 'id, name, kind',
+      evReadings: 'id, monthKey',
+      evConfig: 'id',
     });
   }
 }
@@ -143,6 +161,11 @@ export async function seedDatabase(): Promise<void> {
     const settings = await db.settings.get('app');
     if (!settings) {
       await db.settings.put(DEFAULT_SETTINGS);
+    }
+
+    const evConfig = await db.evConfig.get('app');
+    if (!evConfig) {
+      await db.evConfig.put(DEFAULT_EV_CONFIG);
     }
   })().finally(() => {
     seedPromise = null;

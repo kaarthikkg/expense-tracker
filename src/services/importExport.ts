@@ -1,8 +1,9 @@
 import { db } from '@/db';
 import type { ExportData } from '@/types';
 import { getTransactionType } from '@/utils/transaction';
+import { DEFAULT_EV_CONFIG, normalizeEvConfig } from '@/utils/ev';
 
-const EXPORT_VERSION = 4;
+const EXPORT_VERSION = 5;
 
 export async function buildExportData(): Promise<ExportData> {
   const [
@@ -14,6 +15,8 @@ export async function buildExportData(): Promise<ExportData> {
     recurringExpenses,
     holdings,
     loans,
+    evReadings,
+    evConfig,
     settings,
   ] = await Promise.all([
     db.expenses.toArray(),
@@ -24,6 +27,8 @@ export async function buildExportData(): Promise<ExportData> {
     db.recurringExpenses.toArray(),
     db.holdings.toArray(),
     db.loans.toArray(),
+    db.evReadings.toArray(),
+    db.evConfig.get('app'),
     db.settings.get('app'),
   ]);
 
@@ -38,6 +43,8 @@ export async function buildExportData(): Promise<ExportData> {
     recurringExpenses,
     holdings,
     loans,
+    evReadings,
+    evConfig: normalizeEvConfig(evConfig ?? DEFAULT_EV_CONFIG),
     settings: settings ?? { id: 'app', theme: 'system', currency: 'INR' },
   };
 }
@@ -99,6 +106,8 @@ export async function importBackup(data: ExportData): Promise<void> {
       db.recurringExpenses,
       db.holdings,
       db.loans,
+      db.evReadings,
+      db.evConfig,
       db.settings,
     ],
     async () => {
@@ -110,6 +119,7 @@ export async function importBackup(data: ExportData): Promise<void> {
       await db.recurringExpenses.clear();
       await db.holdings.clear();
       await db.loans.clear();
+      await db.evReadings.clear();
 
       await db.expenses.bulkPut(data.expenses);
       await db.categories.bulkPut(data.categories);
@@ -119,6 +129,8 @@ export async function importBackup(data: ExportData): Promise<void> {
       await db.recurringExpenses.bulkPut(data.recurringExpenses);
       await db.holdings.bulkPut(data.holdings ?? []);
       await db.loans.bulkPut(data.loans ?? []);
+      await db.evReadings.bulkPut(data.evReadings ?? []);
+      await db.evConfig.put(normalizeEvConfig(data.evConfig ?? DEFAULT_EV_CONFIG));
       await db.settings.put(data.settings);
     },
   );

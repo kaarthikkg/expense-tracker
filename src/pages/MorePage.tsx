@@ -7,6 +7,7 @@ const links = [
   { to: '/accounts', label: 'Cards & banks', desc: 'Transaction source tagging' },
   { to: '/portfolio', label: 'Portfolio', desc: 'Holdings & investment P&L' },
   { to: '/loans', label: 'Loans', desc: 'Outstanding, EMI & repayment' },
+  { to: '/ev', label: 'EV usage & savings', desc: 'Odometer, km driven & fuel savings' },
   { to: '/goals', label: 'Savings Momentum', desc: 'Target tracking' },
   { to: '/recurring', label: 'Recurring', desc: 'Automated flows' },
   { to: '/reports', label: 'Analytics', desc: 'Deep intelligence' },

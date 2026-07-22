@@ -22,6 +22,7 @@ const sidebarNav = [
   { to: '/budgets', label: 'Burn', Icon: IconBudget },
   { to: '/portfolio', label: 'Portfolio', Icon: IconPortfolio },
   { to: '/loans', label: 'Loans', Icon: IconLoans },
+  { to: '/ev', label: 'EV & savings', Icon: IconPortfolio },
   { to: '/reports', label: 'Analytics', Icon: IconTransactions },
   { to: '/categories', label: 'Categories', Icon: IconMore },
   { to: '/accounts', label: 'Cards & banks', Icon: IconMore },

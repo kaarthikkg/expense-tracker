@@ -14,6 +14,7 @@ import { useGoalStore } from '@/store/goalStore';
 import { useRecurringStore } from '@/store/recurringStore';
 import { useHoldingStore } from '@/store/holdingStore';
 import { useLoanStore } from '@/store/loanStore';
+import { useEvStore } from '@/store/evStore';
 import { usePaymentSourceStore } from '@/store/paymentSourceStore';
 import {
   buildExportData,
@@ -44,6 +45,7 @@ export function SettingsPage() {
       useRecurringStore.getState().load(),
       useHoldingStore.getState().load(),
       useLoanStore.getState().load(),
+      useEvStore.getState().load(),
       usePaymentSourceStore.getState().load(),
       useSettingsStore.getState().load(),
     ]);

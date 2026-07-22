@@ -8,6 +8,7 @@ import { useExpenseStore } from '@/store/expenseStore';
 import { useGoalStore } from '@/store/goalStore';
 import { useHoldingStore } from '@/store/holdingStore';
 import { useLoanStore } from '@/store/loanStore';
+import { useEvStore } from '@/store/evStore';
 import { usePaymentSourceStore } from '@/store/paymentSourceStore';
 import { useRecurringStore } from '@/store/recurringStore';
 import { useSettingsStore } from '@/store/settingsStore';
@@ -32,6 +33,7 @@ export function useInitApp(): { ready: boolean } {
         useRecurringStore.getState().load(),
         useHoldingStore.getState().load(),
         useLoanStore.getState().load(),
+        useEvStore.getState().load(),
         usePaymentSourceStore.getState().load(),
         useSettingsStore.getState().load(),
       ]);

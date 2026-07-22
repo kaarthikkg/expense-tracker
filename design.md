@@ -6,6 +6,12 @@ Build a modern frontend-only Expense Tracker from `Expense_Tracker_Coding_Agent_
 
 **Firebase:** Hosting + Firestore + Auth; Dexie remains the local cache with optional cloud sync when signed in.
 
+Latest prompt: fix deprecated baseUrl in tsconfig.app.json (TS 6 / TS 7 prep).
+Latest prompt: what is the formula used to calculate EV savings?
+Latest prompt: remove charging features — petrol savings only.
+Latest prompt: show overall + this month EV km driven and savings.
+Latest prompt: make EV tracking generic — no iQube/brand mentions in the app.
+Latest prompt: add another section called EV usage tracking and savings — monthly odometer on 1st, km driven & savings.
 Latest prompt: add some financial background in this application dynamic.
 Latest prompt: fix Vite build chunk size warning (>500 kB).
 Latest prompt: add option to see monthly insights in dashboard for previous months (not only current month).
@@ -57,6 +63,8 @@ src/
 - **settings** — theme, currency, single row id `app`
 - **holdings** — investments: where (`name`), `assetType`, `investedAmount`, `currentValue`, notes
 - **loans** — `name`, `loanType`, `principalAmount`, `outstandingAmount`, optional `monthlyEmi`, optional `interestRate`, `startDate`, notes
+- **evReadings** — monthly odometer snapshots (`monthKey`, `odometerKm`) for EV usage
+- **evConfig** — vehicle name + petrol/electricity rate assumptions for savings estimates
 
 ## UX
 
@@ -284,3 +292,61 @@ Still not fitting into mobile browser — make it dynamic for both mobile and PC
 - Dashboard/NetWorth/Cards: `w-full min-w-0`, fluid `.type-metric` / `.amount-fit` for long ₹ amounts
 - Vite `server.host: true` so phones can open the LAN URL while developing
 - Hard-refresh after pull; on phone use the Network URL from `npm run dev`, not a desktop-zoomed tab
+
+### Prompt — EV usage tracking and savings (2026-07-22)
+
+Add another section called EV usage tracking and savings. Ask for monthly odometer reading on the 1st of every month; show how much saved and how many km driven on a TVS iQube EV scooter.
+
+### Agent response — EV usage & savings (2026-07-22)
+
+- New route `/ev` (sidebar + More menu): monthly odometer logs for a generic EV
+- Dexie v7: `evReadings` + `evConfig`; Zustand `useEvStore`; JSON backup v5; Firestore sync collections included
+- Reminder banner when the current month has no reading (stronger copy on the 1st)
+- km driven = difference between consecutive month readings; savings = petrol equivalent cost − estimated charging cost (editable rates: petrol ₹/L, km/L, ₹/kWh, km/kWh)
+- Defaults use generic EV assumptions vs a typical 45 km/L petrol scooter
+
+### Prompt — Make EV tracking generic (2026-07-22)
+
+No need to mention iQube in the application; keep it generic.
+
+### Agent response — Generic EV copy (2026-07-22)
+
+- Removed TVS/iQube branding from UI, defaults, and help text
+- Default vehicle name is **My EV**; rates/copy refer to generic EV efficiency
+
+### Prompt — Overall + this month EV metrics (2026-07-22)
+
+Show overall EV driven and this month driven kms, and overall EV savings and this month savings.
+
+### Agent response — EV summary cards (2026-07-22)
+
+- Top stats now show four metrics: **Overall km**, **This month km**, **Overall EV savings**, **This month savings**
+- This-month values come from the current month’s odometer segment (vs prior reading); show — until that segment exists
+
+### Prompt — Remove charging from EV savings (2026-07-22)
+
+Remove charging features; just savings is enough.
+
+### Agent response — Petrol-only EV savings (2026-07-22)
+
+- Dropped electricity rate / EV km-per-kWh from config, UI, and math
+- Savings = estimated petrol cost for the same km (price × km ÷ petrol mileage)
+- Rates modal only asks for vehicle name, petrol price, and petrol km/L
+
+### Prompt — EV savings formula (2026-07-22)
+
+What is the formula used to calculate savings?
+
+### Agent response — Savings formula explained (2026-07-22)
+
+Documented the petrol-only formula: km driven from odometer delta; savings = (km ÷ petrol km/L) × petrol price/L.
+
+### Prompt — Fix deprecated baseUrl (2026-07-22)
+
+Option `baseUrl` is deprecated and will stop functioning in TypeScript 7.0.
+
+### Agent response — Remove baseUrl, prefix paths (2026-07-22)
+
+- Removed `baseUrl` from `tsconfig.app.json`
+- Updated `"@/*"` mapping to `["./src/*"]` (inline former baseUrl prefix)
+- Verified with `tsc -b` and `npm run build` (exit 0)

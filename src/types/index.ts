@@ -128,6 +128,28 @@ export interface Loan {
   updatedAt: string;
 }
 
+/** Monthly odometer snapshot for EV usage tracking (typically on the 1st). */
+export interface EvOdometerReading {
+  id: string;
+  /** Calendar month this reading represents (`YYYY-MM`) */
+  monthKey: string;
+  /** Odometer value in kilometres */
+  odometerKm: number;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Assumptions used to estimate petrol spend avoided by driving EV. */
+export interface EvConfig {
+  id: 'app';
+  vehicleName: string;
+  /** Petrol price ₹/L (or local currency unit per litre) */
+  petrolPricePerLitre: number;
+  /** Comparable petrol scooter/bike efficiency km/L */
+  petrolKmPerLitre: number;
+}
+
 export interface ExportData {
   version: number;
   exportedAt: string;
@@ -139,5 +161,7 @@ export interface ExportData {
   recurringExpenses: RecurringExpense[];
   holdings?: Holding[];
   loans?: Loan[];
+  evReadings?: EvOdometerReading[];
+  evConfig?: EvConfig;
   settings: AppSettings;
 }
